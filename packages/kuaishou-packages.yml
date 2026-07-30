@@ -1,0 +1,70 @@
+generated: '2026-07-19'
+method: searched
+source: https://registry.npmjs.org/-/v1/search?text=kwai (2026-07-19)
+notes: >-
+  Kuaishou publishes open source to npm under the Kwai brand, but NONE of it is a client library for the
+  Kuaishou Open Platform API or the Kwai for Business marketing API. The first-party packages found are
+  media-player and front-end infrastructure libraries. Because no official API client SDK exists on any
+  public registry, no `SDKs` pointer is wired into apis.yml — only `Packages`.
+registries_probed:
+- registry: npm
+  result: first-party non-API packages found
+- registry: pypi
+  result: search page did not render; no first-party Kuaishou/Kwai API client identified
+- registry: maven-central
+  result: not probed (web search budget exhausted)
+- registry: nuget
+  result: not probed (web search budget exhausted)
+- registry: pkg.go.dev
+  result: not probed (web search budget exhausted)
+- registry: rubygems
+  result: not probed (web search budget exhausted)
+- registry: packagist
+  result: not probed (web search budget exhausted)
+- registry: crates.io
+  result: not probed (web search budget exhausted)
+api_client_sdks: []
+api_client_sdk_note: >-
+  No first-party client library for https://open.kuaishou.com/openapi or
+  https://developers.kwai.com/rest/n/mapi was found on any public package registry.
+packages:
+- language: javascript
+  registry: npm
+  name: '@kwai-video-team/las.js'
+  url: https://www.npmjs.com/package/@kwai-video-team/las.js
+  install: npm install @kwai-video-team/las.js
+  official: true
+  category: media-player
+  description: Live Adaptive Streaming (LAS) video library for FLV and live streaming.
+  repository: https://github.com/KwaiVideoTeam/las
+- language: javascript
+  registry: npm
+  name: '@kwai-video-team/kwai-player-web'
+  url: https://www.npmjs.com/package/@kwai-video-team/kwai-player-web
+  install: npm install @kwai-video-team/kwai-player-web
+  official: true
+  category: media-player
+  description: Web video player supporting FLV, HLS, MP4 and live streaming.
+- language: javascript
+  registry: npm
+  name: '@kwai-explore/model'
+  url: https://www.npmjs.com/package/@kwai-explore/model
+  install: npm install @kwai-explore/model
+  official: true
+  category: frontend-infrastructure
+  description: Vue.js state management solution published by the Kwai front-end team.
+- language: javascript
+  registry: npm
+  name: '@kwai-explore/picture'
+  url: https://www.npmjs.com/package/@kwai-explore/picture
+  install: npm install @kwai-explore/picture
+  official: true
+  category: frontend-infrastructure
+  description: Picture component supporting multiple image formats.
+third_party:
+- language: javascript
+  registry: npm
+  name: '@tarojs/plugin-platform-kwai'
+  url: https://www.npmjs.com/package/@tarojs/plugin-platform-kwai
+  official: false
+  description: Taro build plugin targeting the Kuaishou (Kwai) mini-program platform. Community-maintained.

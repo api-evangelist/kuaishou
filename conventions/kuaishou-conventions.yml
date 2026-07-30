@@ -1,0 +1,84 @@
+generated: '2026-07-19'
+method: searched
+source: >-
+  Live HTTP probes of https://open.kuaishou.com/openapi/*, https://open.kuaishou.com/oauth2/*,
+  https://developers.kwai.com/rest/n/mapi/* on 2026-07-19
+notes: >-
+  Cross-cutting runtime semantics observed on the wire. Kuaishou's written conventions reference is inside
+  the registered-developer portal, which is a JavaScript SPA and is not publicly crawlable, so anything not
+  directly observed is recorded as `unverified` rather than assumed.
+apis:
+- api: kuaishou:open-platform
+  transport:
+    protocol: https
+    http_version: HTTP/2 (h2), HTTP/3 advertised via alt-svc
+    style: RPC-over-HTTP (path-per-operation under /openapi)
+    media_type: application/json
+  authentication:
+    style: oauth2_authorization_code
+    detail: authentication/kuaishou-authentication.yml
+  idempotency:
+    supported: unverified
+    header: null
+    note: >-
+      No idempotency key header or retry-safety guidance could be verified on the public surface. No
+      Idempotency pointer is emitted for this provider.
+  pagination:
+    style: unverified
+    note: Not observable without an authorized token.
+  versioning:
+    style: path_segment
+    detail: >-
+      Some Open API routes embed a product/segment path rather than a global version prefix; no global
+      /v1-style version segment was observed on the probed routes. Kwai for Business routes are namespaced
+      under /rest/n/mapi.
+    version_header: none observed
+  request_tracing:
+    supported: true
+    field: request_id
+    location: response body
+    detail: >-
+      Every /openapi response carries a `request_id` (an opaque numeric string) suitable for support
+      correlation. Observed values include 784498438610956703 and 784498480869633090. The edge also emits
+      an `x-kslogid` response header on Kwai hosts.
+  error_envelope:
+    format: proprietary
+    fields: [result, error_msg, request_id]
+    rfc9457: false
+    detail: errors/kuaishou-error-codes.yml
+    note: >-
+      Application-level failures are returned with HTTP 200 and a non-zero `result`; consumers must inspect
+      the body rather than relying on the HTTP status alone.
+  rate_limit_signaling:
+    supported: unverified
+    headers: none observed on unauthenticated probes
+- api: kuaishou:kwai-for-business
+  transport:
+    protocol: https
+    style: RPC-over-HTTP under /rest/n/mapi
+    media_type: application/json;charset=UTF-8
+  authentication:
+    style: unverified
+    detail: authentication/kuaishou-authentication.yml
+  idempotency:
+    supported: unverified
+  pagination:
+    style: unverified
+  versioning:
+    style: path_segment
+  request_tracing:
+    supported: true
+    field: x-kslogid
+    location: response header
+  error_envelope:
+    format: proprietary
+    fields: [timestamp, status, error, message, path]
+    rfc9457: false
+    detail: errors/kuaishou-error-codes.yml
+  rate_limit_signaling:
+    supported: unverified
+cross_links:
+  authentication: authentication/kuaishou-authentication.yml
+  errors: errors/kuaishou-error-codes.yml
+  conformance: conformance/kuaishou-conformance.yml
+  well_known: well-known/kuaishou-well-known.yml

@@ -1,0 +1,62 @@
+generated: '2026-07-19'
+method: derived
+source: >-
+  Derived from authentication/kuaishou-authentication.yml, errors/kuaishou-error-codes.yml,
+  conventions/kuaishou-conventions.yml and well-known/kuaishou-well-known.yml (live probes 2026-07-19)
+notes: >-
+  Assertions about cross-cutting standards. `conforms: null` means the pipeline could not verify either
+  way from the public surface — it is not a claim of non-conformance.
+standards:
+- id: oauth2
+  name: OAuth 2.0 (RFC 6749)
+  conforms: true
+  evidence: >-
+    open.kuaishou.com publishes an /oauth2/authorize front channel and an /oauth2/access_token token
+    endpoint; the token endpoint returns the RFC 6749 `invalid_request` error identifier for an
+    unparameterised request.
+- id: oidc
+  name: OpenID Connect
+  conforms: false
+  evidence: >-
+    No /.well-known/openid-configuration discovery document is served on any probed Kuaishou or Kwai host
+    (requests are absorbed by the SPA catch-all and return text/html).
+- id: rfc8414
+  name: OAuth 2.0 Authorization Server Metadata (RFC 8414)
+  conforms: false
+  evidence: No /.well-known/oauth-authorization-server document on open.kuaishou.com or developers.kwai.com.
+- id: rfc9457
+  name: Problem Details for HTTP APIs (RFC 9457)
+  conforms: false
+  evidence: >-
+    Errors use a proprietary {result, error_msg, request_id} envelope with media type application/json,
+    not application/problem+json.
+- id: rfc9116
+  name: security.txt (RFC 9116)
+  conforms: false
+  evidence: >-
+    No /.well-known/security.txt is served on www.kuaishou.com, open.kuaishou.com, developers.kwai.com,
+    www.kwai.com or ad.e.kuaishou.com.
+- id: rfc8594
+  name: Sunset HTTP Header (RFC 8594)
+  conforms: null
+  evidence: No Sunset or Deprecation headers observed; no public deprecation policy could be retrieved.
+- id: json_api
+  name: JSON:API
+  conforms: false
+  evidence: Responses are flat RPC-style JSON objects, not JSON:API documents.
+- id: odata
+  name: OData
+  conforms: false
+  evidence: No $metadata or OData query conventions observed.
+- id: openapi
+  name: OpenAPI description published
+  conforms: false
+  evidence: No machine-readable OpenAPI/Swagger description is published on either developer portal.
+- id: idempotency
+  name: Idempotency keys (draft-ietf-httpapi-idempotency-key-header)
+  conforms: null
+  evidence: No idempotency header could be verified on the public surface.
+compliance_certifications: []
+compliance_note: >-
+  No trust center, SOC 2 / ISO 27001 / PCI attestation page or named certification could be verified on
+  any Kuaishou or Kwai property, so no Compliance or TrustCenter pointer is emitted.

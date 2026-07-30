@@ -1,0 +1,67 @@
+generated: '2026-07-19'
+method: searched
+source: >-
+  Live HTTP probes against https://open.kuaishou.com/openapi/* and
+  https://open.kuaishou.com/oauth2/access_token and https://developers.kwai.com/rest/n/mapi/* on 2026-07-19
+format: proprietary
+notes: >-
+  Kuaishou does not use RFC 9457 application/problem+json. The catalogue below records only error codes
+  and envelope shapes observed directly on the wire; the provider's full error-code reference is behind
+  developer registration and is not reproduced or guessed at here.
+envelopes:
+- api: kuaishou:open-platform
+  media_type: application/json
+  shape:
+    result: integer result code (non-zero on failure)
+    error_msg: human-readable message, Chinese-language
+    request_id: opaque correlation id returned per request
+    error: OAuth 2.0 error identifier, present on /oauth2/* responses only
+  http_status_note: >-
+    The Open API returns HTTP 200 for application-level errors and signals failure in the `result` field;
+    an HTTP 404 is used for unrouted paths and still carries the same JSON envelope.
+- api: kuaishou:kwai-for-business
+  media_type: application/json;charset=UTF-8
+  shape:
+    timestamp: server time of the failure
+    status: HTTP status code, repeated in the body
+    error: HTTP reason phrase
+    message: detail message, "No message available" when absent
+    path: the request path that failed
+  http_status_note: Standard HTTP status codes; the body mirrors the status.
+errors:
+- code: 100200100
+  api: kuaishou:open-platform
+  message: 参数为空 / 请求参数错误，请检查参数是否合法
+  title: Invalid or missing request parameters
+  meaning: >-
+    The request omitted required parameters or supplied values that failed validation. Observed on both
+    /openapi/photo/list and /openapi/user_info with no parameters, and on /oauth2/access_token where it is
+    additionally tagged with the OAuth 2.0 `invalid_request` identifier.
+  http_status: 200
+  remediation: Supply the required parameters (including the access token) and re-issue the request.
+  evidence: >-
+    GET https://open.kuaishou.com/openapi/user_info ->
+    {"result":100200100,"error_msg":"参数为空","request_id":"..."}
+- code: 1026
+  api: kuaishou:open-platform
+  message: '[1026] 404 NOT FOUND'
+  title: Unknown Open API route
+  meaning: The requested /openapi path does not correspond to a published operation.
+  http_status: 404
+  remediation: Check the operation path against the Open Platform documentation for your app's granted products.
+  evidence: >-
+    GET https://open.kuaishou.com/openapi/mp/developer/user/getUserInfo ->
+    {"result":1026,"error_msg":"[1026] 404 NOT FOUND","request_id":"..."}
+- code: 404
+  api: kuaishou:kwai-for-business
+  message: Not Found
+  title: Unrouted marketing API path
+  meaning: The /rest/n/mapi path is served by the Kwai for Business application server but no handler matched.
+  http_status: 404
+  remediation: Verify the operation path against the Kwai for Business marketing API documentation.
+  evidence: >-
+    GET https://developers.kwai.com/rest/n/mapi/report/dspAccountReport ->
+    {"timestamp":"...","status":404,"error":"Not Found","message":"No message available","path":"..."}
+gaps:
+- Kuaishou's complete numeric result-code registry is published inside the registered-developer
+  documentation and could not be harvested; only probe-verified codes are recorded.

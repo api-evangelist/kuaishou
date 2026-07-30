@@ -1,0 +1,126 @@
+generated: '2026-07-19'
+method: searched
+source: Live HTTP probes on 2026-07-19
+result: none
+notes: >-
+  No /.well-known/ discovery document is published on any Kuaishou or Kwai host. Most hosts answer every
+  /.well-known/* path with HTTP 200 and the site's JavaScript single-page-application shell (text/html,
+  identical byte length for every path), which is a catch-all soft 404 and NOT a discovery document — so
+  nothing was saved. www.kwai.com is the only host that returns honest 404s. Because nothing real was
+  found, no WellKnown or SecurityTxt pointer is wired into apis.yml.
+hosts:
+- host: https://open.kuaishou.com
+  spa_catch_all: true
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    content_type: text/html
+    real: false
+    reason: SPA shell (50964 bytes, identical to other paths)
+  - path: /.well-known/openid-configuration
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/api-catalog
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: text/html
+    real: false
+- host: https://developers.kwai.com
+  spa_catch_all: true
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    content_type: text/html
+    real: false
+    reason: SPA shell (45101 bytes, identical to other paths)
+  - path: /.well-known/openid-configuration
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/api-catalog
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: text/html
+    real: false
+- host: https://www.kuaishou.com
+  spa_catch_all: true
+  documents:
+  - path: /.well-known/security.txt
+    status: null
+    real: false
+    reason: connection timed out after 12s
+  - path: /.well-known/openid-configuration
+    status: 200
+    content_type: text/html; charset=utf-8
+    real: false
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: text/html; charset=utf-8
+    real: false
+  - path: /.well-known/api-catalog
+    status: 200
+    content_type: text/html; charset=utf-8
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: text/html; charset=utf-8
+    real: false
+- host: https://www.kwai.com
+  spa_catch_all: false
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+    content_type: text/plain
+    real: false
+  - path: /.well-known/openid-configuration
+    status: 404
+    real: false
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    real: false
+  - path: /.well-known/api-catalog
+    status: 404
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    content_type: application/json
+    real: false
+- host: https://ad.e.kuaishou.com
+  spa_catch_all: true
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    content_type: text/html
+    real: false
+    reason: SPA shell (100871 bytes, identical to other paths)
+  - path: /.well-known/openid-configuration
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/api-catalog
+    status: 200
+    content_type: text/html
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: text/html
+    real: false
