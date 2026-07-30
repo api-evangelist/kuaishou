@@ -1,28 +1,128 @@
 aid: kuaishou
 name: Kuaishou
-description: 'Kuaishou is a company surfaced as a portfolio company of dcm-ventures, hongshan and added
-  to the API Evangelist network as a stub for enrichment. Sector: consumer. This profile is a lead awaiting
-  the enrichment pipeline.'
+description: 'Kuaishou Technology (快手) is a Beijing-based short-video and live-streaming platform operating
+  Kuaishou in mainland China and Kwai internationally, spanning short video, live commerce, local services
+  and online marketing. Its developer surface is split across two public properties: the Kuaishou Open
+  Platform (open.kuaishou.com), which exposes an OAuth 2.0 authorization-code flow and a JSON Open API
+  for third-party apps, mini programs and merchant integrations; and Kwai for Business (developers.kwai.com),
+  the international marketing/advertising API used by advertisers and measurement partners. Kuaishou also
+  publishes open source under the Kwai GitHub organization. Documentation on both portals is delivered
+  as a JavaScript single-page application and is largely Chinese-language and gated behind developer
+  registration, so this profile records only endpoints and pages verified by live HTTP probe.'
 url: https://raw.githubusercontent.com/api-evangelist/kuaishou/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
 x-backed-by:
 - dcm-ventures
 - hongshan
-x-tier: stub
-x-tier-reason: portfolio-lead
+x-tier: profiled
+x-tier-reason: verified-api-surface
+accessModel:
+  pricing: unknown
+  onboarding: open
+  trial: false
+  try_now: false
+  public: true
+  label: Open access
+  confidence: medium
+  source:
+  - authentication
+  generated: '2026-07-22'
+  method: derived
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-19'
+image: https://s2-11031.kwimgs.com/kos/nlav11031/assets/favicon.ico
 tags:
 - Company
 - Consumer
-apis: []
+- Social
+- Video
+- Short Video
+- Live Streaming
+- Advertising
+- Marketing
+- Social Media
+- Content
+- China
+apis:
+- aid: kuaishou:open-platform
+  name: Kuaishou Open Platform API
+  description: 'The Kuaishou Open Platform (快手开放平台) exposes a JSON HTTP API for third-party applications,
+    mini programs and merchant tools built on Kuaishou. Access is granted through a standard OAuth 2.0
+    authorization-code flow (/oauth2/authorize plus /oauth2/access_token) and API calls are made against
+    the /openapi path. Responses use a Kuaishou-specific envelope carrying a numeric result code, an
+    error_msg and a request_id for support correlation.'
+  humanURL: https://open.kuaishou.com/
+  baseURL: https://open.kuaishou.com/openapi
+  tags:
+  - Social
+  - Video
+  - Content
+  - OAuth
+  properties:
+  - type: DeveloperPortal
+    url: https://open.kuaishou.com/
+  - type: Authentication
+    url: authentication/kuaishou-authentication.yml
+  - type: ErrorCatalog
+    url: errors/kuaishou-error-codes.yml
+  - type: Conventions
+    url: conventions/kuaishou-conventions.yml
+- aid: kuaishou:kwai-for-business
+  name: Kwai for Business Marketing API
+  description: 'Kwai for Business is Kuaishou''s international advertising and marketing platform for the
+    Kwai app. Its developer portal at developers.kwai.com documents a marketing API served from the
+    /rest/n/mapi path, used by advertisers, agencies and measurement partners for campaign, creative and
+    reporting workflows. The service returns a JSON error envelope (timestamp, status, error, message,
+    path) on unrouted requests.'
+  humanURL: https://developers.kwai.com/
+  baseURL: https://developers.kwai.com/rest/n/mapi
+  tags:
+  - Advertising
+  - Marketing
+  - Reporting
+  properties:
+  - type: DeveloperPortal
+    url: https://developers.kwai.com/
+  - type: Conventions
+    url: conventions/kuaishou-conventions.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: DomainSecurity
+  url: security/kuaishou-domain-security.yml
 - type: Website
-  url: http://www.kuaishou.com/
+  url: https://www.kuaishou.com/
+- type: DeveloperPortal
+  url: https://open.kuaishou.com/
+- type: GitHubOrganization
+  url: https://github.com/kwai
+- type: Support
+  url: https://www.kuaishou.com/about/contact
+- type: HelpCenter
+  url: https://www.kuaishou.com/help/feedback
+- type: TermsOfService
+  url: https://www.kuaishou.com/about/policy?tab=protocol
+- type: PrivacyPolicy
+  url: https://www.kuaishou.com/about/policy?tab=privacy
+- type: Authentication
+  url: authentication/kuaishou-authentication.yml
+- type: ErrorCatalog
+  url: errors/kuaishou-error-codes.yml
+- type: Conventions
+  url: conventions/kuaishou-conventions.yml
+- type: Conformance
+  url: conformance/kuaishou-conformance.yml
+- type: Packages
+  url: packages/kuaishou-packages.yml
+- type: LLMsTxt
+  url: llms/kuaishou-llms.txt
+x-enrichment:
+  date: '2026-07-19'
+  status: backfilled
+  pass: local-v1
+  note: backfilled from .gitignore signal + verified work evidence
