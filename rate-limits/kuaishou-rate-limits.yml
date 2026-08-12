@@ -1,0 +1,95 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://open.kuaishou.com/docs/develop/server/errorCode-new.html and
+  https://open.kuaishou.com/docs/develop/IndustrySolutions/introduction/errorCodes.html (both HTTP 200,
+  server-rendered, fetched 2026-08-12); response headers observed on
+  https://open.kuaishou.com/openapi/user_info and https://api-singapore.klingai.com/v1/videos/text2video
+  (2026-08-12)
+notes: >-
+  Kuaishou publishes throttling as ERROR CODES rather than as a rate-limit reference page, and returns
+  no rate-limit response headers on any surface probed. That is the finding: an integrator can learn
+  that they were throttled only by parsing the body, and cannot learn their remaining budget at all.
+  Two concrete numeric limits ARE published, both for local-services product mounting. Everything else
+  is undocumented.
+limit_count: 2
+signal_headers:
+  published: []
+  observed: []
+  note: >-
+    No X-RateLimit-*, RateLimit-* or Retry-After header was returned by any Kuaishou, Kwai or Kling host.
+    The only correlation headers present are X-REQUEST-ID and X-KSLOGID on open.kuaishou.com. On Kling
+    AI the correlation value is carried in the response body as request_id, not in a header.
+apis:
+- api: kuaishou:open-platform
+  exhaustion:
+  - code: 10000302
+    message: api too fast
+    title: Generic throttle
+    http_status: 200
+    envelope_field: result
+    detail: >-
+      Documented as "请求频率太快被限流" (request frequency too high, throttled). No numeric threshold, window
+      or scope is published for this code.
+    source: /docs/develop/server/errorCode-new.html
+  - code: 10002032
+    message: 操作过于频繁
+    title: Per-product operation throttle
+    http_status: 200
+    envelope_field: result
+    source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  limits:
+  - id: product-mount
+    scope: per external product id + poiId
+    operation: 商品挂载 (product mount)
+    limit: 1
+    window: 10 minutes
+    burst: null
+    error_code: 10002032
+    note: >-
+      The provider states the limits verbatim: "当前限制：商品挂载10min 1次，商品编辑10s 1次". Limits for the same
+      product under different POIs are independent of one another.
+    source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  - id: product-edit
+    scope: per external product id + poiId
+    operation: 商品编辑 (product edit)
+    limit: 1
+    window: 10 seconds
+    burst: null
+    error_code: 10002032
+    source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  non_api_quotas:
+  - id: merchant-withdrawal
+    scope: per merchant per channel
+    limit: 1
+    window: 1 day
+    error_code: 10000645
+    note: A business quota surfaced as an API error, not a request-rate limit.
+    source: /docs/develop/server/errorCode-new.html
+- api: kuaishou:kwai-for-business
+  limits: []
+  note: >-
+    No rate-limit documentation is reachable on the public surface; developers.kwai.com is a JavaScript
+    single-page application and its reference is gated behind advertiser registration.
+- api: kuaishou:kling-ai
+  limits: []
+  concurrency_note: >-
+    Kling AI is an asynchronous generation API — work is submitted, then polled by generationId — so the
+    meaningful constraint is concurrent-task and credit budget rather than requests per second. Neither
+    a published concurrency table nor a rate-limit header was found. The provider's MCP/CLI guide does
+    publish one hard constraint on the agent surface: MCP and CLI accept only PAID credits from the
+    Personal workspace, and bonus credits cannot be spent through them.
+  exhaustion:
+  - code: 1001
+    http_status: 401
+    title: Missing Authorization
+    note: Observed; not a throttle, recorded here only because it is the only live code confirmed.
+  source: https://kling.ai/app/mcp/guide
+gaps:
+- >-
+  No numeric request-rate limit is published for the Kuaishou Open API generally, for the Kwai for
+  Business marketing API, or for the Kling AI generation API.
+- >-
+  No rate-limit response headers are emitted anywhere, so an agent cannot read remaining budget or a
+  reset time from a live response — it can only detect the throttle after the fact from result code
+  10000302 or 10002032.

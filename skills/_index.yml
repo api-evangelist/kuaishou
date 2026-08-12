@@ -1,0 +1,34 @@
+generated: '2026-08-12'
+method: generated
+source: >-
+  https://registry.npmjs.org/@klingai/cli-global README (v0.1.3) and package dist/cli.js;
+  https://kling.ai/app/mcp/guide; https://kling.ai/.well-known/oauth-protected-resource;
+  mcp/kuaishou-kling-mcp.yml
+notes: >-
+  Packaged Agent Skills for Kuaishou's API surfaces. Only ONE skill is published, and only for Kling
+  AI, because Kling AI is the only Kuaishou surface with a machine-readable, publicly documented tool
+  contract: the MCP tool names and the submit/poll flow are published by Kuaishou itself in the README
+  of its own @klingai/cli-global package. No skill is written for the Kuaishou Open Platform or Kwai
+  for Business — neither publishes an OpenAPI description or an equivalent tool contract, and inventing
+  operation names for them would teach an agent to call endpoints that may not exist.
+skills:
+- name: kling-generate-and-poll
+  file: kuaishou-kling-generate-and-poll.md
+  api: kuaishou:kling-ai
+  description: >-
+    Generate an image or video with Kling AI and retrieve the result — authenticate, discover models
+    with who_am_i, submit, poll by generationId, read works[].url — including the credit, retry and
+    rate-limit caveats.
+  transport: mcp
+  mcp_url: https://kling.ai/mcp
+  operations: [who_am_i, text_to_image, image_to_image, text_to_video, image_to_video, query_tasks, file_upload, query_membership_and_credits]
+  method: generated
+skipped:
+- api: kuaishou:open-platform
+  reason: >-
+    No OpenAPI description and no published tool contract. The server API documentation is readable
+    (open.kuaishou.com/docs is server-rendered) but describes ~37 endpoints in prose across payment,
+    settlement, login, mounting and data surfaces; grounding a skill in it would mean transcribing
+    paths by hand with no machine-verifiable source.
+- api: kuaishou:kwai-for-business
+  reason: No public documentation or operation catalogue is reachable.

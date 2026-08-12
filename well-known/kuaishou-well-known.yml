@@ -1,16 +1,126 @@
-generated: '2026-07-19'
-method: searched
-source: Live HTTP probes on 2026-07-19
-result: none
+generated: '2026-08-12'
+method: probed
+source: Live HTTP probes on 2026-07-19 (Kuaishou/Kwai hosts) and 2026-08-12 (Kling AI hosts)
+result: partial
 notes: >-
-  No /.well-known/ discovery document is published on any Kuaishou or Kwai host. Most hosts answer every
-  /.well-known/* path with HTTP 200 and the site's JavaScript single-page-application shell (text/html,
-  identical byte length for every path), which is a catch-all soft 404 and NOT a discovery document — so
-  nothing was saved. www.kwai.com is the only host that returns honest 404s. Because nothing real was
-  found, no WellKnown or SecurityTxt pointer is wired into apis.yml.
+  Round 2 changed this result. The Kuaishou and Kwai hosts still publish nothing under /.well-known/ —
+  most of them answer every /.well-known/* path with HTTP 200 and the site's JavaScript single-page
+  application shell (text/html, identical byte length for every path), which is a catch-all soft 404 and
+  NOT a discovery document. But kling.ai — Kuaishou Technology's Kling AI platform, which the company's
+  own llms.txt names as "developed by Kuaishou Technology (HKEX: 1024)" — returns honest 404s for the
+  standard paths AND serves two REAL machine-readable documents for its MCP server: an RFC 9728 OAuth
+  Protected Resource Metadata document and an RFC 8414 Authorization Server Metadata document. Both are
+  saved verbatim beside this index. Because at least one path now returns a genuine document, a
+  WellKnown pointer IS wired into apis.yml. No security.txt is served on any host, so no SecurityTxt
+  pointer is emitted.
 hosts:
+- host: https://kling.ai
+  spa_catch_all: false
+  probed: '2026-08-12'
+  documents:
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    content_type: application/json
+    real: true
+    file: kuaishou-kling-oauth-protected-resource.json
+    spec: RFC 9728 OAuth 2.0 Protected Resource Metadata
+    note: >-
+      Advertises resource https://kling.ai/mcp, authorization server https://kling.ai/auth and three
+      scopes (generation.create, generation.read, account.credit.read). The same body is served at
+      /.well-known/oauth-protected-resource/mcp, which is the path named in the WWW-Authenticate
+      challenge returned by the MCP endpoint.
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 200
+    content_type: application/json
+    real: true
+    file: kuaishou-kling-oauth-protected-resource.json
+    note: Byte-identical to /.well-known/oauth-protected-resource.
+  - path: /.well-known/oauth-authorization-server/auth
+    status: 200
+    content_type: application/json;charset=UTF-8
+    real: true
+    file: kuaishou-kling-oauth-authorization-server.json
+    spec: RFC 8414 OAuth 2.0 Authorization Server Metadata
+    note: >-
+      Issuer https://kling.ai/auth. Declares authorization/token/registration/revocation endpoints,
+      PKCE S256, authorization_code + refresh_token grants, public clients, and a jwks_uri. The same
+      body is served at /auth/.well-known/oauth-authorization-server, /.well-known/openid-configuration/auth
+      and /auth/.well-known/openid-configuration.
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    content_type: application/json;charset=UTF-8
+    real: false
+    note: The issuer is https://kling.ai/auth, so RFC 8414 puts the document at the /auth-suffixed path.
+  - path: /.well-known/openid-configuration
+    status: 404
+    content_type: application/json;charset=UTF-8
+    real: false
+  - path: /.well-known/security.txt
+    status: 404
+    content_type: application/json;charset=UTF-8
+    real: false
+  - path: /.well-known/api-catalog
+    status: 404
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    real: false
+  - path: /.well-known/agent-card.json
+    status: 404
+    real: false
+- host: https://api-singapore.klingai.com
+  spa_catch_all: false
+  probed: '2026-08-12'
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+    real: false
+  - path: /.well-known/openid-configuration
+    status: 404
+    real: false
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    real: false
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+    real: false
+  - path: /.well-known/api-catalog
+    status: 404
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    real: false
+  - path: /.well-known/agent-card.json
+    status: 404
+    real: false
+- host: https://api-beijing.klingai.com
+  spa_catch_all: false
+  probed: '2026-08-12'
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+    real: false
+  - path: /.well-known/openid-configuration
+    status: 404
+    real: false
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    real: false
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+    real: false
+  - path: /.well-known/api-catalog
+    status: 404
+    real: false
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    real: false
+  - path: /.well-known/agent-card.json
+    status: 404
+    real: false
 - host: https://open.kuaishou.com
   spa_catch_all: true
+  probed: '2026-07-19'
   documents:
   - path: /.well-known/security.txt
     status: 200
@@ -33,8 +143,14 @@ hosts:
     status: 200
     content_type: text/html
     real: false
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: text/html
+    real: false
+    reason: SPA shell (50971 bytes); re-probed 2026-08-12 with the same result.
 - host: https://developers.kwai.com
   spa_catch_all: true
+  probed: '2026-07-19'
   documents:
   - path: /.well-known/security.txt
     status: 200
@@ -57,8 +173,14 @@ hosts:
     status: 200
     content_type: text/html
     real: false
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: text/html
+    real: false
+    reason: SPA shell (45101 bytes); re-probed 2026-08-12 with the same result.
 - host: https://www.kuaishou.com
   spa_catch_all: true
+  probed: '2026-07-19'
   documents:
   - path: /.well-known/security.txt
     status: null
@@ -82,6 +204,7 @@ hosts:
     real: false
 - host: https://www.kwai.com
   spa_catch_all: false
+  probed: '2026-07-19'
   documents:
   - path: /.well-known/security.txt
     status: 404
@@ -102,6 +225,7 @@ hosts:
     real: false
 - host: https://ad.e.kuaishou.com
   spa_catch_all: true
+  probed: '2026-07-19'
   documents:
   - path: /.well-known/security.txt
     status: 200
@@ -124,3 +248,5 @@ hosts:
     status: 200
     content_type: text/html
     real: false
+security_txt: none
+agent_card: none

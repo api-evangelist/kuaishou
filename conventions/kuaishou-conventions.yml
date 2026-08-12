@@ -1,12 +1,17 @@
-generated: '2026-07-19'
+generated: '2026-08-12'
 method: searched
 source: >-
   Live HTTP probes of https://open.kuaishou.com/openapi/*, https://open.kuaishou.com/oauth2/*,
-  https://developers.kwai.com/rest/n/mapi/* on 2026-07-19
+  https://developers.kwai.com/rest/n/mapi/* (2026-07-19) and
+  https://api-singapore.klingai.com/v1/videos/text2video, https://kling.ai/mcp (2026-08-12);
+  server-rendered documentation at https://open.kuaishou.com/docs/develop/server/* and
+  https://open.kuaishou.com/docs/develop/developerTools/* (fetched 2026-08-12);
+  the @klingai/cli-global README (v0.1.3) for the Kling task/poll contract
 notes: >-
-  Cross-cutting runtime semantics observed on the wire. Kuaishou's written conventions reference is inside
-  the registered-developer portal, which is a JavaScript SPA and is not publicly crawlable, so anything not
-  directly observed is recorded as `unverified` rather than assumed.
+  Cross-cutting runtime semantics. Round 1 recorded most fields as `unverified` because the written
+  reference was assumed to be gated; the mini-program documentation subtree at open.kuaishou.com/docs
+  is in fact server-rendered and readable, so several fields are now sourced rather than observed.
+  Anything still unverifiable is marked `unverified` and NOT filled in.
 apis:
 - api: kuaishou:open-platform
   transport:
@@ -14,44 +19,130 @@ apis:
     http_version: HTTP/2 (h2), HTTP/3 advertised via alt-svc
     style: RPC-over-HTTP (path-per-operation under /openapi)
     media_type: application/json
+    request_encoding: application/x-www-form-urlencoded for the token and session endpoints
   authentication:
-    style: oauth2_authorization_code
+    style: oauth2_authorization_code + oauth2_client_credentials + code2session
     detail: authentication/kuaishou-authentication.yml
   idempotency:
-    supported: unverified
+    supported: false
     header: null
+    mechanism: caller-supplied external order number
+    detail: >-
+      There is no Idempotency-Key header. On the payment family, replay safety is enforced on the
+      merchant's own external order number: a repeat submission returns result 10000610 (重复下单,
+      "duplicate order"), and a repeat with different details returns 10000602 (订单信息不一致, "order
+      information mismatch"). That is a uniqueness constraint on a business key, not an idempotency
+      contract — it rejects the retry rather than replaying the original response.
     note: >-
-      No idempotency key header or retry-safety guidance could be verified on the public surface. No
-      Idempotency pointer is emitted for this provider.
+      Because no idempotency-key mechanism exists, NO Idempotency pointer is emitted for this provider.
+    source: /docs/develop/server/errorCode-new.html
   pagination:
     style: unverified
-    note: Not observable without an authorized token.
+    note: Not observable without an authorized token; no pagination contract is published on the public pages read.
   versioning:
-    style: path_segment
+    style: path_segment + base_library
     detail: >-
-      Some Open API routes embed a product/segment path rather than a global version prefix; no global
-      /v1-style version segment was observed on the probed routes. Kwai for Business routes are namespaced
-      under /rest/n/mapi.
+      Open API routes embed a product/segment path rather than a global version prefix. The
+      mini-program runtime is versioned separately as a base library, with a runtime capability probe
+      (ks.canIUse) instead of a version negotiation header. Current-generation payment and error
+      documents carry a "-new" path suffix.
     version_header: none observed
   request_tracing:
     supported: true
     field: request_id
     location: response body
+    headers: [X-REQUEST-ID, X-KSLOGID]
     detail: >-
       Every /openapi response carries a `request_id` (an opaque numeric string) suitable for support
-      correlation. Observed values include 784498438610956703 and 784498480869633090. The edge also emits
-      an `x-kslogid` response header on Kwai hosts.
+      correlation, and the edge echoes the same value in X-REQUEST-ID and X-KSLOGID response headers.
+      Observed values include 784498438610956703 and 786555261206772308.
   error_envelope:
     format: proprietary
     fields: [result, error_msg, request_id]
     rfc9457: false
+    success_value: 'result = 1 on the mini-program server APIs'
     detail: errors/kuaishou-error-codes.yml
     note: >-
-      Application-level failures are returned with HTTP 200 and a non-zero `result`; consumers must inspect
-      the body rather than relying on the HTTP status alone.
+      Application-level failures are returned with HTTP 200 and a non-success `result`; consumers must
+      inspect the body rather than relying on the HTTP status alone.
   rate_limit_signaling:
+    supported: false
+    headers: []
+    mechanism: error code only (10000302 "api too fast", 10002032 per-product throttle)
+    detail: rate-limits/kuaishou-rate-limits.yml
+  payload_protection:
+    encryption: AES-128-CBC with PKCS#5 padding, key = Base64_Decode(session_key), IV returned per response
+    signature: sha1ToHex(rawData + sessionKey)
+    source: /docs/develop/functionAccessGuide/thirdPartyLogin.html
+  request_signing:
+    field: sign
+    scope: payment family
+    failure_code: 10000606
+- api: kuaishou:kling-ai
+  transport:
+    protocol: https
+    style: REST with async task submission
+    media_type: application/json;charset=UTF-8
+    regions:
+    - https://api-singapore.klingai.com
+    - https://api-beijing.klingai.com
+  authentication:
+    style: bearer_jwt (REST) + oauth2_authorization_code with PKCE (MCP)
+    detail: authentication/kuaishou-authentication.yml
+  async_contract:
+    style: submit-then-poll
+    submit_returns: generationId
+    poll_operation: query_tasks / poll by generationId
+    terminal_states_note: >-
+      The official CLI treats submitted, pending, queuing, queueing, processing and running as
+      non-terminal states while polling.
+    default_poll_window: 60 seconds (CLI `--poll` with no argument); callers commonly use 120-300s for video
+    result_fields: ['works[].url', 'works[].url_without_watermark']
+    source: '@klingai/cli-global README and dist/cli.js'
+  idempotency:
     supported: unverified
-    headers: none observed on unauthenticated probes
+    header: null
+    note: >-
+      No idempotency mechanism is documented on the public surface. Given generation is billed per call,
+      this is a material gap for retry-safe agent use, but it is recorded as unverified rather than as
+      absent — the REST reference is JS-rendered and could not be read.
+  pagination:
+    style: unverified
+  versioning:
+    style: model-id
+    detail: >-
+      The URL path is /v1/; the meaningful version selector is the model API ID passed in the request
+      body (kling-v3, kling-v3-omni, kling-video-o1, ...). Available models and their parameter specs
+      are discoverable at runtime through the who_am_i MCP tool, which the CLI calls before every
+      generation.
+    detail_ref: lifecycle/kuaishou-lifecycle.yml
+  request_tracing:
+    supported: true
+    field: request_id
+    location: response body
+    format: UUID
+    detail: 'Observed: {"code":1001,"message":"Authorization is empty","request_id":"4930e02d-..."}'
+  error_envelope:
+    format: proprietary
+    fields: [code, message, request_id]
+    secondary_shape: '{timestamp, status, error, message, path} on framework-level 404s'
+    rfc9457: false
+    http_status_meaningful: true
+    detail: errors/kuaishou-error-codes.yml
+  rate_limit_signaling:
+    supported: false
+    headers: []
+    note: No rate-limit headers observed on live responses.
+  billing_semantics:
+    unit: credits, deducted per generation
+    failed_generations_charged: false
+    agent_constraint: MCP and CLI accept only paid credits from the Personal workspace
+    detail: plans/kuaishou-plans-pricing.yml
+  file_upload:
+    style: ticketed
+    detail: >-
+      file_upload returns a ticket and an uploadUrl; the client PUTs the file to that URL and receives a
+      public asset URL. Uploads are not multipart against the API host.
 - api: kuaishou:kwai-for-business
   transport:
     protocol: https
@@ -79,6 +170,11 @@ apis:
     supported: unverified
 cross_links:
   authentication: authentication/kuaishou-authentication.yml
+  scopes: scopes/kuaishou-scopes.yml
   errors: errors/kuaishou-error-codes.yml
+  rate_limits: rate-limits/kuaishou-rate-limits.yml
+  lifecycle: lifecycle/kuaishou-lifecycle.yml
+  changelog: changelog/kuaishou-changelog.yml
   conformance: conformance/kuaishou-conformance.yml
   well_known: well-known/kuaishou-well-known.yml
+  mcp: mcp/kuaishou-kling-mcp.yml

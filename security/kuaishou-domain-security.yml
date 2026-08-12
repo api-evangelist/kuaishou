@@ -1,11 +1,13 @@
-generated: '2026-07-19'
+generated: '2026-08-12'
 method: probed
-source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
+source: >-
+  live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts (0-working/probe-domain-security.py, 2026-08-12),
+  plus manual TLS/DNS probes of the Kling AI hosts on 2026-08-12
 hosts:
 - host: www.kuaishou.com
   https: true
   tls_version: TLSv1.2
-  cert_expires: Sep  7 03:46:08 2026 GMT
+  cert_expires: Feb 26 06:51:24 2027 GMT
   hsts: false
 - host: open.kuaishou.com
   https: true
@@ -17,7 +19,52 @@ hosts:
   tls_version: TLSv1.3
   cert_expires: Aug 30 08:23:34 2026 GMT
   hsts: false
+- host: kling.ai
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct  4 04:05:22 2026 GMT
+  hsts: partial
+  hsts_note: >-
+    The document root does NOT send Strict-Transport-Security, but the application endpoints do:
+    https://kling.ai/mcp returns "strict-transport-security: max-age=31536000 ; includeSubDomains".
+    HSTS is therefore inconsistent across the same host, which is a real weakness — a first visit to
+    kling.ai is not protected.
+  probed: '2026-08-12'
+- host: api-singapore.klingai.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Aug 30 08:20:21 2026 GMT
+  hsts: false
+  probed: '2026-08-12'
+- host: api-beijing.klingai.com
+  https: true
+  tls_version: TLSv1.2
+  tls13_supported: false
+  cert_expires: Jan 24 08:07:33 2027 GMT
+  hsts: false
+  probed: '2026-08-12'
+  note: The China API endpoint did not negotiate TLS 1.3 while the Singapore endpoint did.
 domains:
+- domain: kling.ai
+  dnssec: false
+  caa: []
+  spf: true
+  spf_record: v=spf1 include:_spf.google.com ~all
+  dmarc: true
+  dmarc_policy: none
+  probed: '2026-08-12'
+  note: >-
+    DMARC p=none and sp=none — monitoring only, no enforcement, on the domain that hosts the OAuth
+    authorization server and the MCP endpoint.
+- domain: klingai.com
+  dnssec: false
+  caa: []
+  spf: true
+  spf_record: v=spf1 include:_spf.google.com ~all
+  dmarc: true
+  dmarc_policy: reject
+  probed: '2026-08-12'
+  note: Fronted by Akamai (wildcard.klingai.com.edgesuite.net).
 - domain: kuaishou.com
   dnssec: false
   caa: []

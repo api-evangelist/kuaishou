@@ -1,0 +1,182 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://open.kuaishou.com/docs/develop/developerTools/cli.html (HTTP 200, server-rendered),
+  https://open.kuaishou.com/docs/develop/developerTools/miniprogram-ci.html (HTTP 200),
+  https://registry.npmjs.org/@klingai/cli-global README (v0.1.3, published 2026-07-08),
+  https://kling.ai/app/cli
+notes: >-
+  Kuaishou ships three distinct first-party command-line surfaces. Two belong to the mini-program
+  developer toolchain and one to Kling AI. Command tables below are transcribed from the provider's own
+  reference pages; no command, flag or default is invented.
+clis:
+- id: kma
+  name: kma (Kuaishou Developer Tools CLI)
+  api: kuaishou:open-platform
+  official: true
+  distribution: bundled
+  distribution_note: >-
+    kma is built into the Kuaishou Mini Program Developer Tools and upgrades with them — it is not a
+    separately installable package. Requires developer tools 1.20.0 or later.
+  install:
+  - platform: windows
+    method: >-
+      Installed with the developer tools, which add kma to the Windows PATH. Node.js required.
+  - platform: macos
+    method: >-
+      Added to /usr/local/bin when the developer tools launch. Manual fallback:
+      curl -fsSL https://static.yximgs.com/udata/pkg/mini-app-ide-release/installer/setupenv.sh | sh
+  exit_codes:
+    0: success
+    1: execution error (for example not logged in, or an invalid project path)
+  commands:
+  - group: help
+    command: kma --help
+    description: List all commands. `kma <command> --help` shows per-command parameters.
+  - group: auth
+    command: kma login
+    description: Log in to the developer tools; prints a QR code in the terminal.
+  - group: auth
+    command: kma logout
+    description: Log out.
+  - group: auth
+    command: kma islogin
+    description: Report login state via the process exit code.
+  - group: project
+    command: kma new
+    description: Create a new Kuaishou mini program.
+    flags: ['--appid', '--project-name']
+  - group: project
+    command: kma import
+    description: Import an existing Kuaishou mini program.
+    flags: ['--appid', '--project-name']
+  - group: project
+    command: kma transform
+    description: Convert a WeChat or ByteDance mini program into a Kuaishou mini program.
+    flags: ['--project-dir', '--target-dir', '--appid', '--project-name']
+  - group: build
+    command: kma preview
+    description: Preview a project.
+  - group: build
+    command: kma remote
+    description: Remote debugging.
+  - group: build
+    command: kma upload
+    description: Upload/publish a version.
+    flags: ['--version', '--desc']
+  - group: project
+    command: kma info
+    description: Update project settings.
+    flags: ['--add-mode', '--remove-mode', '--select-mode', '--update-appid', '--update-project-name', '--refresh-domain', '--skip-domain-validator']
+  - group: project
+    command: kma clear
+    description: Clear caches and build output.
+    flags: ['--storage', '--compiler-output', '--framework', '--all']
+  - group: simulator
+    command: kma lite
+    description: Start, reload or close the standalone simulator window.
+    flags: ['--open', '--close', '--reload', '--compile=watch|once|no', '--env=development|production']
+  - group: simulator
+    command: kma normal
+    description: Start or close the full developer tools window.
+    flags: ['--open', '--close']
+  docs: https://open.kuaishou.com/docs/develop/developerTools/cli.html
+- id: ks-miniprogram-ci
+  name: ks-miniprogram-ci
+  api: kuaishou:open-platform
+  official: true
+  distribution: npm
+  package: ks-miniprogram-ci
+  version: 1.3.16
+  published: '2026-07-21'
+  install:
+  - method: npm install -g ks-miniprogram-ci
+    note: command-line use
+  - method: npm install ks-miniprogram-ci --save
+    note: Node script use
+  authentication: >-
+    A code upload private key downloaded from the Kuaishou developer platform (Developer Settings),
+    optionally combined with an IP allowlist. Kuaishou recommends enabling the allowlist by default.
+  commands:
+  - command: ks-miniprogram-ci appinfo
+    description: Fetch mini-program information.
+    flags: ['--pp (project path)', '--pkp (private key path)', '--appid']
+  - command: ks-miniprogram-ci upload
+    description: Upload a version.
+    flags: ['--pp', '--pkp', '--appid', '--uv (upload version)', '--ud (description)']
+  - command: ks-miniprogram-ci preview
+    description: Generate a preview QR code.
+    flags: ['--pp', '--pkp', '--appid', '--qrcode-format', '--qrcode-output-dest', '--scene']
+  proxy_support: >-
+    Reads HTTPS_PROXY/https_proxy/HTTP_PROXY/http_proxy and npm proxy config, or ci.proxy(url).
+    Adding open.kuaishou.com to no_proxy bypasses the proxy.
+  docs: https://open.kuaishou.com/docs/develop/developerTools/miniprogram-ci.html
+- id: kling
+  name: Kling CLI
+  api: kuaishou:kling-ai
+  official: true
+  distribution: npm
+  package: '@klingai/cli-global'
+  alternate_package: '@klingai/cli-cn'
+  version: 0.1.3
+  published: '2026-07-08'
+  requires: Node.js 18+
+  platforms: [macos, linux, windows]
+  install:
+  - method: npm i -g @klingai/cli-global
+    note: global site
+  - method: npm i -g @klingai/cli-cn
+    note: China site; installs the same `kling` command
+  architecture: >-
+    A thin MCP client. Every generation and query command maps 1:1 to a tool on the backend MCP server
+    at https://kling.ai/mcp — see mcp/kuaishou-kling-mcp.yml.
+  authentication: Browser OAuth (`kling login`); credentials stored under ~/.kling/. Tokens are never printed.
+  output: JSON on stdout by default; `--quiet` emits compact single-line JSON; diagnostics go to stderr.
+  exit_codes:
+    0: success
+    1: failure
+    130: user cancellation
+  commands:
+  - command: kling login
+    description: Browser OAuth login.
+  - command: kling logout
+    description: Revoke and clear saved login state.
+  - command: kling who_am_i
+    description: Return current identity plus available models and parameter specs.
+  - command: kling text_to_image <prompt>
+    description: Submit text-to-image generation.
+  - command: kling image_to_image --image <url|path> <prompt>
+    description: Generate from one or more reference images.
+  - command: kling text_to_video <prompt>
+    description: Submit text-to-video generation.
+  - command: kling image_to_video --image <url|path> <prompt>
+    description: Submit image-to-video generation.
+  - command: kling query_tasks <generationId>
+    description: Query generation status and result URLs.
+  - command: kling file_upload <filePath>
+    description: Upload a local file and return a public URL.
+  - command: kling account
+    description: Query membership and available credits (MCP tool query_membership_and_credits).
+  - command: kling tool_list
+    description: List the tools the backend MCP server advertises (a live tools/list call).
+  global_flags:
+  - flag: --model <name>
+    description: Select a model from who_am_i. Required unless --omni is used.
+  - flag: --omni
+    description: Pick the omni-family model for generation commands.
+  - flag: --skill-name <n> / --skill-version <v>
+    description: Optional telemetry identifying the calling skill; also selects the DCR client_name suffix on login.
+  - flag: --poll [N]
+    description: Poll for up to N seconds. Bare --poll defaults to 60.
+  - flag: --quiet, -q
+    description: Compact single-line JSON output.
+  - flag: --version, -v
+    description: Print CLI version.
+  results: >-
+    Generated assets are returned in works[].url; watermark-free URLs, when available, in
+    works[].url_without_watermark.
+  docs: https://kling.ai/app/cli
+related_tooling:
+- name: Kuaishou Mini Program VSCode plugin
+  docs: https://open.kuaishou.com/docs/develop/developerTools/vscode/vscodeplugin.html
+  note: All kma commands are usable from the VS Code integrated terminal.

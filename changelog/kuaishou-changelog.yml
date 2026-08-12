@@ -1,0 +1,149 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://kling.ai/llms.txt (dated version ladder, HTTP 200, fetched 2026-08-12);
+  https://kling.ai/release-note/release-history (HTTP 200) and its sitemap
+  https://kling.ai/sitemap-release.xml -> 30 dated release-note URLs;
+  https://open.kuaishou.com/docs/operate/specification/updateLog.html (HTTP 200, server-rendered)
+notes: >-
+  Kuaishou publishes two dated change logs and neither is an API changelog in the conventional sense.
+  Kling AI keeps a release-notes section with 30 entries; the index and the URLs are public and dated,
+  but each entry's body is rendered client-side and could not be read, so the highlights below are
+  taken from the provider's OWN llms.txt version ladder rather than paraphrased from pages we could not
+  see. The Kuaishou Open Platform publishes an operating-rules change log, which is a policy log, not
+  an API log. No breaking-change register exists for any surface.
+changelogs:
+- api: kuaishou:kling-ai
+  url: https://kling.ai/release-note/release-history
+  scheme: model-release
+  format: html
+  machine_readable: false
+  entry_count_published: 30
+  entry_index: https://kling.ai/sitemap-release.xml
+  sitemap_lastmod: '2026-05-05'
+  current_version: Kling 3.0 series
+  current_version_date: '2026-02-05'
+  body_note: >-
+    Release-note bodies load via JavaScript; the sitemap gives URLs and a single shared lastmod of
+    2026-05-05 rather than per-entry publication dates. Several entry slugs encode their own date
+    (2025110722, 2025103072, 2025091961, 2025082114, 2025072499, 2025062678, 2025052696, 2025041522,
+    2025032754, 2025012318), indicating roughly monthly releases through 2025.
+  entries:
+  - version: Kling 3.0 / 3.0 Omni
+    date: '2026-02-05'
+    breaking: false
+    additions:
+    - Multi-shot storyboarding with per-shot camera control, up to 6 cuts
+    - Elements system for persistent character identity and voice across shots
+    - Video character reference (3-8 second clip extracts visual traits and voice)
+    - Up to 4K output for both video and image generation
+    - Physical engine integration for collision, gravity and interaction effects
+    source: llms.txt Product Models section
+  - version: Kling 2.6
+    date: '2025-12'
+    breaking: false
+    additions:
+    - Native audio co-generation (speech, sound effects, ambient sound) with lip-sync
+    - First/last frame anchoring
+    source: llms.txt
+  - version: Kling Video O1
+    date: '2025-12'
+    breaking: false
+    additions:
+    - Unified multimodal model with element injection (up to 4 elements) and scene extension
+    source: llms.txt
+  - version: Kling 2.5 Turbo
+    date: '2025-09'
+    breaking: false
+    additions:
+    - Roughly 2x faster generation than the standard models
+    source: llms.txt
+  - version: Kling 2.1
+    date: '2025-05'
+    breaking: false
+    additions:
+    - Start/end frame control; kling-v2-1-master variant with refined facial modelling
+    source: llms.txt
+  - version: Kling 2.0
+    date: '2025-04'
+    breaking: false
+    additions:
+    - Multi-elements editor and camera control
+    source: llms.txt
+  - version: Kling 1.6
+    date: '2024-12'
+    breaking: false
+    additions:
+    - Multi-image reference and video continuation
+    source: llms.txt
+  - version: Kling 1.0
+    date: '2024-06-06'
+    breaking: false
+    additions:
+    - Initial public release; first publicly available DiT-based video generation model
+    source: llms.txt
+- api: kuaishou:kling-ai
+  surface: cli
+  scheme: semver
+  url: https://www.npmjs.com/package/@klingai/cli-global
+  current_version: 0.1.3
+  current_version_date: '2026-07-08'
+  first_release: '2026-06-17'
+  release_count: 4
+  machine_readable: true
+  note: >-
+    The official CLI/MCP client is the one Kuaishou surface with a genuinely machine-readable release
+    history — npm registry metadata. Four releases in three weeks, then quiet since 2026-07-08.
+- api: kuaishou:open-platform
+  url: https://open.kuaishou.com/docs/operate/specification/updateLog.html
+  scheme: dated-policy-log
+  format: html
+  machine_readable: false
+  type: operating-rules
+  last_updated: '2024-12-10'
+  entries:
+  - date: '2024-09-03'
+    breaking: false
+    highlights:
+    - >-
+      Operations documentation consolidated into five parts: platform onboarding, platform capabilities,
+      operations management, industry standards and service agreements.
+  - date: '2023-01-06'
+    breaking: false
+    highlights:
+    - Published the mini-program violation grading and penalty rules
+    - Published the creator/host violation grading standard
+    - Published the phone-number collection and use standard
+    - Added a second-dimension (二次元) category to the mini-program category list
+  - date: '2022-12-05'
+    breaking: false
+    highlights:
+    - Published the financial-category mini-program management standard
+    - Published the product-information publishing standard
+    - Published the physical-goods transaction management standard
+  - date: '2022-03-15'
+    breaking: false
+    highlights:
+    - Added the entertainment/quiz mini-program management standard
+  note: >-
+    This log tracks platform RULES, not API changes. A developer integrating the Open API gets no dated
+    record of endpoint additions, parameter changes or removals.
+- api: kuaishou:open-platform
+  surface: base-library
+  url: https://open.kuaishou.com/docs/develop/updateLog/basicLibraryUpdate.html
+  scheme: base-library-version
+  last_updated: '2023-02-01'
+  entries: []
+  note: >-
+    The base-library update log page is published and reachable but its table renders empty in the
+    server-rendered HTML; last stamped 2023-02-01.
+- api: kuaishou:kwai-for-business
+  url: null
+  entries: []
+  note: No changelog was found on developers.kwai.com.
+gaps:
+- No API-level changelog (endpoints added/changed/removed) exists for any of the three surfaces.
+- No RSS, Atom or JSON feed is published for any changelog.
+- >-
+  Kling release-note bodies are client-rendered; per-entry content is not recorded here rather than
+  being guessed at.

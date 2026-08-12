@@ -1,0 +1,54 @@
+generated: '2026-08-12'
+method: probed
+source: >-
+  https://kling.ai/.well-known/oauth-protected-resource (HTTP 200, application/json) and
+  https://kling.ai/.well-known/oauth-authorization-server/auth (HTTP 200, application/json), both
+  fetched 2026-08-12
+notes: >-
+  These scopes are not derived from any spec and not guessed — they are read verbatim from the
+  scopes_supported array of Kuaishou's own machine-readable OAuth metadata for the Kling AI MCP server.
+  The descriptions below are the pipeline's plain-language reading of each scope name; the provider
+  publishes the identifiers only, with no scope reference page found. The Kuaishou Open Platform
+  (open.kuaishou.com) and Kwai for Business (developers.kwai.com) publish NO scope reference on any
+  public surface, so no scopes are asserted for them.
+apis:
+- api: kuaishou:kling-ai
+  authorization_server: https://kling.ai/auth
+  resource: https://kling.ai/mcp
+  flow: authorization_code
+  pkce: S256
+  dynamic_client_registration: https://kling.ai/auth/register
+  scope_count: 3
+  scopes:
+  - name: generation.create
+    description: >-
+      Submit generation tasks (text-to-image, image-to-image, text-to-video, image-to-video) and upload
+      the source files they consume. This is the write/spend scope — generation consumes account credits.
+    verified: true
+    source: scopes_supported
+  - name: generation.read
+    description: >-
+      Read the status and result URLs of previously submitted generation tasks (the query_tasks tool).
+    verified: true
+    source: scopes_supported
+  - name: account.credit.read
+    description: >-
+      Read membership tier and remaining credit balance (the query_membership_and_credits tool).
+    verified: true
+    source: scopes_supported
+- api: kuaishou:open-platform
+  scope_count: 0
+  scopes: []
+  note: >-
+    The Open Platform runs an OAuth 2.0 authorization-code flow at /oauth2/authorize and
+    /oauth2/access_token and a client_credentials flow for standalone mini programs, but its
+    permission/product reference sits inside the registered-developer console. No public scope list was
+    retrievable, so none is asserted.
+- api: kuaishou:kwai-for-business
+  scope_count: 0
+  scopes: []
+  note: No authorization or token endpoint could be confirmed on the public surface.
+docs: null
+docs_note: >-
+  No human-readable scope/permission reference page was found for the Kling AI OAuth scopes; the
+  machine-readable metadata document is the only public source.

@@ -1,0 +1,187 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://kling.ai/llms.txt (HTTP 200, text/plain, 22,277 bytes, fetched 2026-08-12) — Kuaishou's own
+  machine-readable pricing document, which cites https://kling.ai/dev/pricing (developer API pricing,
+  marked verified 2026-05-29) and https://kling.ai/app/membership/membership-plan (consumer membership)
+  as its sources
+notes: >-
+  Kuaishou's three API surfaces price completely differently, and only one of them publishes anything.
+  The Kuaishou Open Platform and Kwai for Business publish NO developer plans — access is granted by
+  registration and qualification review, not purchase. Kling AI publishes a full price list, and does
+  it unusually well: the numbers below are transcribed from the provider's OWN llms.txt, a
+  machine-readable document Kuaishou serves at the canonical /llms.txt path. Prices are USD for the
+  international market; the China site prices separately in CNY and was not read.
+plan_count: 9
+currency: USD
+apis:
+- api: kuaishou:open-platform
+  plan_count: 0
+  billing_model: none
+  note: >-
+    No developer pricing page exists. Access to the Open Platform is granted by registering a developer
+    subject, creating an app and applying per-capability (short-video mounting, live-room mounting,
+    payments, local services), each with its own qualification review. Revenue-share and settlement
+    terms for the payment products are in the merchant agreements, not in a public price list.
+- api: kuaishou:kwai-for-business
+  plan_count: 0
+  billing_model: advertising-spend
+  note: >-
+    Kwai for Business is an advertising platform; there is no API subscription. Cost is media spend,
+    quoted through an advertiser or agency account. No public rate card was found.
+- api: kuaishou:kling-ai
+  plan_count: 9
+  billing_model: credits-and-usage
+  pricing_url: https://kling.ai/dev/pricing
+  membership_url: https://kling.ai/app/membership/membership-plan
+  credit_rules:
+    deduction: Credits are deducted per video/image generation.
+    variability: Consumption varies by model, resolution, duration, audio toggle and generation mode.
+    failed_generations: Do not consume credits.
+    rollover: Unused monthly subscription credits do not roll over.
+    topup_expiry: Separately purchased credit top-up packs do not expire for 2 years.
+    agent_restriction: >-
+      Bonus credits cannot be used with MCP or CLI; those surfaces accept only paid credits from the
+      Personal workspace.
+  plans:
+  - name: Basic
+    code: free
+    price: 0
+    currency: USD
+    period: month
+    included_credits: 0
+    commercial_use: false
+    note: Free tier for evaluation and personal non-commercial use.
+  - name: Standard
+    code: vip
+    price: 8.80
+    price_first_month: 6.99
+    list_price: 10.00
+    currency: USD
+    period: month
+    yearly_price: 79.20
+    yearly_list_price: 120.00
+    included_credits: 660
+    max_resolution: 4K
+    commercial_use: true
+  - name: Pro
+    code: svip
+    price: 32.56
+    price_first_month: 25.99
+    list_price: 37.00
+    currency: USD
+    period: month
+    yearly_price: 293.04
+    yearly_list_price: 444.00
+    included_credits: 3000
+    max_resolution: 4K
+    professional_mode: true
+    commercial_use: true
+  - name: Premier
+    code: ssvip
+    price: 80.96
+    price_first_month: 64.99
+    list_price: 92.00
+    currency: USD
+    period: month
+    yearly_price: 728.64
+    yearly_list_price: 1104.00
+    included_credits: 8000
+    max_resolution: 4K
+    professional_mode: true
+    commercial_use: true
+  - name: Ultra
+    code: sssvip
+    price: 159.99
+    price_first_month: 127.99
+    list_price: 180.00
+    currency: USD
+    period: month
+    yearly_price: 1429.99
+    yearly_list_price: 2160.00
+    included_credits: 26000
+    max_resolution: 4K
+    professional_mode: true
+    commercial_use: true
+    early_access: true
+  - name: Team SVIP (monthly)
+    price_per_seat: 79.00
+    list_price_per_seat: 99.00
+    currency: USD
+    period: month
+    seats_min: 3
+    seats_max: 15
+    note: Shared credits and centralized billing.
+  - name: Team SVIP (yearly)
+    price_per_seat: 708.00
+    list_price_per_seat: 1188.00
+    currency: USD
+    period: year
+    seats_min: 3
+    seats_max: 15
+  - name: Credit top-up packs
+    price: null
+    currency: USD
+    period: one-time
+    note: >-
+      Eight standalone packs from $5.00 / 330 credits to $1,200.00 / 79,200 + 16,800 bonus credits.
+      Bonus credits begin at the $50 pack (3,300 + 200) and scale to 16,800 at $1,200.
+  - name: API prepaid resource packages
+    price: null
+    currency: USD
+    period: prepaid
+    docs: https://kling.ai/document-api/productBilling/prePaidResourcePackage
+    note: >-
+      Prepaid packages for API consumers, referenced by the provider but with no unit prices published
+      in the machine-readable document.
+  usage_pricing:
+    unit: USD per second of video, or per image
+    note: >-
+      API generation is billed per unit, not per plan. Representative published rates below; the full
+      matrix (every model x mode x audio/video-input combination) is in llms/kuaishou-kling-llms.txt.
+    video:
+    - model: kling-v3
+      mode: std, per second, no audio
+      price: 0.084
+    - model: kling-v3
+      mode: pro, per second, no audio
+      price: 0.112
+    - model: kling-v3
+      mode: 4k, per second
+      price: 0.42
+    - model: kling-v3-omni
+      mode: std, per second, no video input, no audio
+      price: 0.084
+    - model: kling-video-o1
+      mode: std, per second, without video input
+      price: 0.084
+    - model: kling-v2-6
+      mode: std, 5 seconds, no audio
+      price: 0.21
+    image:
+    - model: kling-v3-omni
+      resolution: 1K/2K
+      price: 0.028
+    - model: kling-v3-omni
+      resolution: 4K
+      price: 0.056
+    - model: kling-v2-1
+      capability: text to image
+      price: 0.014
+    - model: kling-v1
+      capability: text to image
+      price: 0.0035
+    other:
+    - model: kolors-virtual-try-on-v1
+      price: 0.07
+    - model: kolors-virtual-try-on-v1-5
+      price: 0.07
+  enterprise:
+    url: https://kling.ai/dev/enterprise-membership
+    guide: https://kling.ai/dev/enterprise-membership-guide
+    note: An enterprise developer membership exists; terms were not read this pass.
+gaps:
+- >-
+  The China-site (kling.ai CN / api-beijing.klingai.com) price list, quoted in CNY, was not read.
+- >-
+  No public price or quota table exists for the Kuaishou Open Platform or Kwai for Business.

@@ -1,45 +1,109 @@
-generated: '2026-07-19'
+generated: '2026-08-12'
 method: derived
 source: >-
-  Derived from authentication/kuaishou-authentication.yml, errors/kuaishou-error-codes.yml,
-  conventions/kuaishou-conventions.yml and well-known/kuaishou-well-known.yml (live probes 2026-07-19)
+  Derived from authentication/kuaishou-authentication.yml, scopes/kuaishou-scopes.yml,
+  errors/kuaishou-error-codes.yml, conventions/kuaishou-conventions.yml,
+  mcp/kuaishou-kling-mcp.yml and well-known/kuaishou-well-known.yml (live probes 2026-07-19 and
+  2026-08-12)
 notes: >-
   Assertions about cross-cutting standards. `conforms: null` means the pipeline could not verify either
-  way from the public surface — it is not a claim of non-conformance.
+  way from the public surface — it is not a claim of non-conformance. Several verdicts changed this
+  round because the Kling AI surface (kling.ai, a Kuaishou Technology property) publishes real
+  machine-readable OAuth metadata that the Kuaishou and Kwai hosts do not.
 standards:
 - id: oauth2
   name: OAuth 2.0 (RFC 6749)
   conforms: true
+  scope: kuaishou:open-platform, kuaishou:kling-ai
   evidence: >-
     open.kuaishou.com publishes an /oauth2/authorize front channel and an /oauth2/access_token token
-    endpoint; the token endpoint returns the RFC 6749 `invalid_request` error identifier for an
-    unparameterised request.
-- id: oidc
-  name: OpenID Connect
-  conforms: false
+    endpoint supporting both authorization_code and client_credentials, and the token endpoint returns
+    the RFC 6749 `invalid_request` error identifier for an unparameterised request. kling.ai publishes a
+    complete authorization-server metadata document with authorize/token/register/revoke endpoints.
+- id: oauth21
+  name: OAuth 2.1 profile (PKCE-required, public clients, no implicit grant)
+  conforms: true
+  scope: kuaishou:kling-ai
   evidence: >-
-    No /.well-known/openid-configuration discovery document is served on any probed Kuaishou or Kwai host
-    (requests are absorbed by the SPA catch-all and return text/html).
+    https://kling.ai/.well-known/oauth-authorization-server/auth declares
+    code_challenge_methods_supported ["S256"], response_types_supported ["code"] only,
+    grant_types_supported ["authorization_code","refresh_token"] and
+    token_endpoint_auth_methods_supported ["none"].
 - id: rfc8414
   name: OAuth 2.0 Authorization Server Metadata (RFC 8414)
-  conforms: false
-  evidence: No /.well-known/oauth-authorization-server document on open.kuaishou.com or developers.kwai.com.
+  conforms: true
+  scope: kuaishou:kling-ai
+  evidence: >-
+    HTTP 200 application/json at https://kling.ai/.well-known/oauth-authorization-server/auth (issuer
+    https://kling.ai/auth). Saved verbatim at
+    well-known/kuaishou-kling-oauth-authorization-server.json. NOT served on open.kuaishou.com or
+    developers.kwai.com, where every /.well-known/* path is absorbed by an SPA catch-all.
+- id: rfc9728
+  name: OAuth 2.0 Protected Resource Metadata (RFC 9728)
+  conforms: true
+  scope: kuaishou:kling-ai
+  evidence: >-
+    HTTP 200 application/json at https://kling.ai/.well-known/oauth-protected-resource, and the MCP
+    endpoint's 401 carries WWW-Authenticate: Bearer
+    resource_metadata=https://kling.ai/.well-known/oauth-protected-resource/mcp. Saved verbatim at
+    well-known/kuaishou-kling-oauth-protected-resource.json.
+- id: rfc7591
+  name: OAuth 2.0 Dynamic Client Registration (RFC 7591)
+  conforms: true
+  scope: kuaishou:kling-ai
+  evidence: >-
+    registration_endpoint https://kling.ai/auth/register is advertised in the authorization server
+    metadata, and the official CLI performs DCR (POST client_name / application_type "native" /
+    redirect_uris / grant_types / response_types) on login.
+- id: rfc7636
+  name: PKCE (RFC 7636)
+  conforms: true
+  scope: kuaishou:kling-ai
+  evidence: code_challenge_methods_supported ["S256"] in the authorization server metadata.
+- id: mcp
+  name: Model Context Protocol
+  conforms: true
+  scope: kuaishou:kling-ai
+  evidence: >-
+    A hosted MCP server is published at https://kling.ai/mcp over streamable HTTP with the RFC 9728
+    authorization pattern; Kuaishou ships an official MCP client (@klingai/cli-global) whose per-command
+    help fetches the live tools/list declaration. The tool schemas themselves are OAuth-gated.
+- id: oidc
+  name: OpenID Connect
+  conforms: null
+  scope: kuaishou:kling-ai
+  evidence: >-
+    The RFC 8414 document is also served at the OIDC discovery paths
+    (/.well-known/openid-configuration/auth and /auth/.well-known/openid-configuration) and declares
+    jwks_uri, subject_types_supported ["public"] and id_token_signing_alg_values_supported ["RS256"].
+    But it advertises no userinfo_endpoint and no "openid" scope, so full OIDC conformance is not
+    asserted. No OIDC discovery document at all is served on open.kuaishou.com or developers.kwai.com.
 - id: rfc9457
   name: Problem Details for HTTP APIs (RFC 9457)
   conforms: false
   evidence: >-
-    Errors use a proprietary {result, error_msg, request_id} envelope with media type application/json,
-    not application/problem+json.
+    None of the three surfaces uses application/problem+json. Open Platform uses
+    {result, error_msg, request_id}; Kling AI uses {code, message, request_id}; Kwai for Business and
+    Kling framework-level 404s use {timestamp, status, error, message, path}.
 - id: rfc9116
   name: security.txt (RFC 9116)
   conforms: false
   evidence: >-
     No /.well-known/security.txt is served on www.kuaishou.com, open.kuaishou.com, developers.kwai.com,
-    www.kwai.com or ad.e.kuaishou.com.
+    www.kwai.com, ad.e.kuaishou.com, kling.ai, api-singapore.klingai.com or api-beijing.klingai.com.
 - id: rfc8594
   name: Sunset HTTP Header (RFC 8594)
-  conforms: null
-  evidence: No Sunset or Deprecation headers observed; no public deprecation policy could be retrieved.
+  conforms: false
+  evidence: >-
+    No Sunset or Deprecation headers observed on any host, and no deprecation policy is published. See
+    lifecycle/kuaishou-lifecycle.yml.
+- id: rfc9110-status-semantics
+  name: Meaningful HTTP status codes
+  conforms: partial
+  evidence: >-
+    Kling AI and Kwai for Business return real HTTP status codes (401, 404). The Kuaishou Open Platform
+    returns HTTP 200 for application-level failures and signals the error in the `result` field, so a
+    client cannot rely on status alone.
 - id: json_api
   name: JSON:API
   conforms: false
@@ -51,12 +115,47 @@ standards:
 - id: openapi
   name: OpenAPI description published
   conforms: false
-  evidence: No machine-readable OpenAPI/Swagger description is published on either developer portal.
+  evidence: >-
+    No machine-readable OpenAPI/Swagger description is published on any host. Probed
+    /openapi.json, /openapi.yaml, /swagger.json, /v1/openapi.json, /api-docs, /v2/api-docs, /docs and
+    /redoc against open.kuaishou.com, developers.kwai.com, ad.e.kuaishou.com, kling.ai,
+    api-singapore.klingai.com and api-beijing.klingai.com on 2026-08-12; every response was either an
+    HTML SPA shell, a 404 JSON envelope or a 405.
+- id: asyncapi
+  name: AsyncAPI description published
+  conforms: false
+  evidence: >-
+    No AsyncAPI document was found. The Open Platform documents event/callback notifications for orders
+    and product operations, but publishes no event catalogue in a machine-readable form.
+- id: llmstxt
+  name: llms.txt
+  conforms: true
+  scope: kuaishou:kling-ai
+  evidence: >-
+    https://kling.ai/llms.txt returns HTTP 200 text/plain, 22,277 bytes — a genuine, richly structured
+    llms.txt carrying the model catalogue and full price list. A shorter one (1,559 bytes) is served at
+    https://klingai.com/llms.txt. Saved verbatim at llms/kuaishou-kling-llms.txt. No llms.txt is served
+    on open.kuaishou.com or developers.kwai.com.
+- id: a2a
+  name: A2A Agent Card
+  conforms: false
+  evidence: >-
+    /.well-known/agent-card.json and /.well-known/agent.json probed on every host 2026-08-12. kling.ai
+    and the klingai.com API hosts return honest 404s; open.kuaishou.com, developers.kwai.com and
+    ad.e.kuaishou.com return the SPA catch-all shell, which is not a card. No agent card exists, and
+    none was authored.
 - id: idempotency
   name: Idempotency keys (draft-ietf-httpapi-idempotency-key-header)
+  conforms: false
+  evidence: >-
+    No Idempotency-Key header exists on any surface. The Open Platform's payment family enforces
+    uniqueness on the merchant's external order number instead (result 10000610 on a duplicate), which
+    rejects a retry rather than replaying its result.
+- id: pagination
+  name: Documented pagination contract
   conforms: null
-  evidence: No idempotency header could be verified on the public surface.
+  evidence: No pagination contract is published on any reachable public page.
 compliance_certifications: []
 compliance_note: >-
   No trust center, SOC 2 / ISO 27001 / PCI attestation page or named certification could be verified on
-  any Kuaishou or Kwai property, so no Compliance or TrustCenter pointer is emitted.
+  any Kuaishou, Kwai or Kling property, so no Compliance or TrustCenter pointer is emitted.

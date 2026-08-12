@@ -5,10 +5,14 @@ description: 'Kuaishou Technology (快手) is a Beijing-based short-video and li
   and online marketing. Its developer surface is split across two public properties: the Kuaishou Open
   Platform (open.kuaishou.com), which exposes an OAuth 2.0 authorization-code flow and a JSON Open API
   for third-party apps, mini programs and merchant integrations; and Kwai for Business (developers.kwai.com),
-  the international marketing/advertising API used by advertisers and measurement partners. Kuaishou also
-  publishes open source under the Kwai GitHub organization. Documentation on both portals is delivered
-  as a JavaScript single-page application and is largely Chinese-language and gated behind developer
-  registration, so this profile records only endpoints and pages verified by live HTTP probe.'
+  the international marketing/advertising API used by advertisers and measurement partners. A third and
+  markedly more open surface is Kling AI (kling.ai), Kuaishou''s generative video and image platform,
+  which ships an asynchronous REST API, an official CLI, a hosted MCP server with published OAuth scopes,
+  and the only llms.txt Kuaishou serves anywhere. Kuaishou also publishes open source under the Kwai
+  GitHub organization. The Open Platform console and the Kwai for Business portal are JavaScript
+  single-page applications, largely Chinese-language and gated behind developer registration, but the
+  mini-program documentation subtree at open.kuaishou.com/docs is server-rendered and publicly readable,
+  so this profile records endpoints and pages verified by live HTTP probe or read from that subtree.'
 url: https://raw.githubusercontent.com/api-evangelist/kuaishou/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -31,7 +35,7 @@ accessModel:
   method: derived
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-19'
+modified: '2026-08-12'
 image: https://s2-11031.kwimgs.com/kos/nlav11031/assets/favicon.ico
 tags:
 - Company
@@ -45,6 +49,10 @@ tags:
 - Social Media
 - Content
 - China
+- AI
+- Generative AI
+- Machine Learning
+- MCP
 apis:
 - aid: kuaishou:open-platform
   name: Kuaishou Open Platform API
@@ -87,6 +95,52 @@ apis:
     url: https://developers.kwai.com/
   - type: Conventions
     url: conventions/kuaishou-conventions.yml
+- aid: kuaishou:kling-ai
+  name: Kling AI API
+  description: 'Kling AI (可灵) is Kuaishou Technology''s generative video and image platform, launched in
+    June 2024 and, by the company''s own account, responsible for over 600 million generated videos and
+    30,000+ enterprise customers. It exposes an asynchronous REST API for text-to-video, image-to-video,
+    text-to-image, image editing, motion control and virtual try-on, served from api-singapore.klingai.com
+    globally and api-beijing.klingai.com in China, authenticated with a self-signed JWT built from an
+    Access Key ID and Secret. Callers select a generation model by API ID (kling-v3, kling-v3-omni,
+    kling-video-o1, kling-v2-6 and earlier), submit a task, then poll by generationId. Kuaishou also runs
+    a hosted MCP server for the same capability set at https://kling.ai/mcp, gated by an OAuth 2.1-style
+    authorization-code flow with PKCE and dynamic client registration, and ships an official CLI
+    (@klingai/cli-global) that is a thin client over it. Kling AI is the only Kuaishou property that
+    publishes an llms.txt, RFC 9728 protected-resource metadata and RFC 8414 authorization-server
+    metadata.'
+  humanURL: https://kling.ai/dev
+  baseURL: https://api-singapore.klingai.com
+  tags:
+  - AI
+  - Generative AI
+  - Video
+  - Image
+  - Machine Learning
+  - MCP
+  properties:
+  - type: DeveloperPortal
+    url: https://kling.ai/dev
+  - type: Documentation
+    url: https://kling.ai/document-api
+  - type: Pricing
+    url: https://kling.ai/dev/pricing
+  - type: ChangeLog
+    url: https://kling.ai/release-note/release-history
+  - type: MCPServer
+    url: mcp/kuaishou-kling-mcp.yml
+  - type: OAuthScopes
+    url: scopes/kuaishou-scopes.yml
+  - type: LLMsTxt
+    url: llms/kuaishou-kling-llms.txt
+  - type: Authentication
+    url: authentication/kuaishou-authentication.yml
+  - type: ErrorCatalog
+    url: errors/kuaishou-error-codes.yml
+  - type: Conventions
+    url: conventions/kuaishou-conventions.yml
+  - type: AgentSkill
+    url: skills/kuaishou-kling-generate-and-poll.md
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -119,10 +173,50 @@ common:
   url: conformance/kuaishou-conformance.yml
 - type: Packages
   url: packages/kuaishou-packages.yml
+- type: SDKs
+  url: packages/kuaishou-packages.yml
 - type: LLMsTxt
   url: llms/kuaishou-llms.txt
+- type: WellKnown
+  url: well-known/kuaishou-well-known.yml
+- type: MCPServer
+  url: mcp/kuaishou-kling-mcp.yml
+- type: OAuthScopes
+  url: scopes/kuaishou-scopes.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: CLI
+  url: cli/kuaishou-cli.yml
+- type: Components
+  url: components/kuaishou-components.yml
+- type: Plans
+  url: plans/kuaishou-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/kuaishou-rate-limits.yml
+- type: Lifecycle
+  url: lifecycle/kuaishou-lifecycle.yml
+- type: ChangeLog
+  url: changelog/kuaishou-changelog.yml
+- type: Documentation
+  url: https://open.kuaishou.com/docs
+- type: APIReference
+  url: https://open.kuaishou.com/docs/develop/server/code2Session.html
+- type: GettingStarted
+  url: https://open.kuaishou.com/docs/introduction/quickStartGuide/quickStart.html
+- type: Pricing
+  url: https://kling.ai/dev/pricing
+- type: Blog
+  url: https://kling.ai/blog
 x-enrichment:
-  date: '2026-07-19'
-  status: backfilled
+  date: '2026-08-12'
+  status: enriched
+  artifacts_added: 13
   pass: local-v1
-  note: backfilled from .gitignore signal + verified work evidence
+  note: >-
+    Round 2 found a third API surface — Kling AI (kling.ai), which the provider's own llms.txt attributes
+    to Kuaishou Technology — carrying a hosted MCP server at https://kling.ai/mcp with RFC 9728/RFC 8414
+    metadata and three published OAuth scopes, an official CLI on npm, and a full public price list. It
+    also corrected round 1's finding that the Kuaishou developer docs are uncrawlable: the mini-program
+    subtree at open.kuaishou.com/docs is server-rendered and yielded the published error-code tables,
+    rate limits, CLI reference and component library. Still no OpenAPI, AsyncAPI, security.txt, agent
+    card, status page or trust center anywhere.

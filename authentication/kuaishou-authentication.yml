@@ -1,20 +1,31 @@
-generated: '2026-07-19'
+generated: '2026-08-12'
 method: searched
-source: https://open.kuaishou.com/oauth2/authorize (HTTP 200), https://open.kuaishou.com/oauth2/access_token (HTTP 200, JSON)
+source: >-
+  https://open.kuaishou.com/oauth2/authorize (HTTP 200), https://open.kuaishou.com/oauth2/access_token
+  (HTTP 200, JSON), probed 2026-07-19;
+  https://open.kuaishou.com/docs/develop/IndustrySolutions/introduction/miniprogram/getAccessToken.html
+  and https://open.kuaishou.com/docs/develop/server/code2Session.html and
+  https://open.kuaishou.com/docs/develop/functionAccessGuide/thirdPartyLogin.html (all HTTP 200,
+  server-rendered, fetched 2026-08-12);
+  https://kling.ai/.well-known/oauth-protected-resource and
+  https://kling.ai/.well-known/oauth-authorization-server/auth (both HTTP 200, fetched 2026-08-12);
+  https://api-singapore.klingai.com/v1/videos/text2video (HTTP 401, fetched 2026-08-12)
 notes: >-
-  Verified by live HTTP probe on 2026-07-19. The Kuaishou Open Platform developer documentation is served
-  as a JavaScript single-page application and its written scope/permission reference is gated behind
-  developer registration, so only the endpoints and behaviours observed directly on the wire are recorded
-  here. No scope list is asserted because none could be verified without an approved developer account.
+  Round 1 could only describe the Open Platform's front channel from the wire. This round adds the
+  provider's own server-side documentation for both Open Platform token flows, and adds a third API
+  surface — Kling AI — whose authorization posture is the strongest of the three by a wide margin: it
+  publishes RFC 9728 and RFC 8414 metadata, supports PKCE S256 and dynamic client registration, and
+  scopes its MCP server explicitly.
 apis:
 - api: kuaishou:open-platform
   base_url: https://open.kuaishou.com/openapi
   schemes:
-  - id: kuaishou_oauth2
+  - id: kuaishou_oauth2_user
     type: oauth2
     flow: authorization_code
     authorization_url: https://open.kuaishou.com/oauth2/authorize
     token_url: https://open.kuaishou.com/oauth2/access_token
+    credentials: app_id + app_secret (issued when the app is approved on the Open Platform)
     evidence:
       authorization_endpoint_status: 200
       authorization_endpoint_content_type: text/html
@@ -28,8 +39,137 @@ apis:
       token_endpoint_note: >-
         The token endpoint answers an unparameterised request with the OAuth 2.0 `invalid_request` error
         identifier wrapped in Kuaishou's own result/error_msg envelope.
-    scopes_documented: unverified
+    scopes_documented: false
     scopes_source: null
+  - id: kuaishou_oauth2_client_credentials
+    type: oauth2
+    flow: client_credentials
+    token_url: https://open.kuaishou.com/oauth2/access_token
+    http_methods: [POST, GET]
+    content_type: application/x-www-form-urlencoded
+    parameters:
+    - name: app_id
+      required: true
+      type: string
+      description: mini program id
+    - name: app_secret
+      required: true
+      type: string
+      description: the secret issued when the mini program was registered
+    - name: grant_type
+      required: true
+      type: string
+      value: client_credentials
+    response_shape:
+      result: 1 on success
+      access_token: bearer token used to reach privileged resources
+      expires_in: seconds until expiry (documented example 23435, roughly 6.5 hours)
+      token_type: bearer
+    detail: >-
+      Kuaishou's own words: "单体小程序获取access_token，该授权方式使用 OAuth2 的 client credentials 模式，
+      即向开发者授权非用户资源" — standalone mini programs use client_credentials to obtain non-user resources.
+    docs: https://open.kuaishou.com/docs/develop/IndustrySolutions/introduction/miniprogram/getAccessToken.html
+    method: searched
+  - id: kuaishou_mp_code2session
+    type: session-exchange
+    token_url: https://open.kuaishou.com/oauth2/mp/code2session
+    http_method: POST
+    content_type: application/x-www-form-urlencoded
+    parameters:
+    - name: js_code
+      required: true
+      description: the code returned by the client-side ks.login call; valid for 10 minutes
+    - name: app_id
+      required: true
+    - name: app_secret
+      required: true
+    response_shape:
+      result: 1 on success
+      session_key: session key, valid for 24 hours
+      open_id: >-
+        user id scoped to the mini program; consistent across mini programs owned by the same developer
+        subject (identified by unified social credit code)
+    detail: >-
+      The mini-program login exchange. Not an OAuth flow — a proprietary code-for-session exchange that
+      returns a symmetric session_key.
+    docs: https://open.kuaishou.com/docs/develop/server/code2Session.html
+    method: searched
+  payload_protection:
+    scheme: AES-128-CBC + SHA-1 signature
+    detail: >-
+      Sensitive open-API payloads are returned encrypted. Decryption uses AES-128-CBC with PKCS#5
+      padding; the key is Base64_Decode(session_key) (16 bytes) and the IV is Base64_Decode(iv) returned
+      alongside the data. Integrity is checked with sha1ToHex(rawData + sessionKey) == signature.
+    docs: https://open.kuaishou.com/docs/develop/functionAccessGuide/thirdPartyLogin.html
+    note: >-
+      SHA-1 for signature verification is a dated choice; it is recorded here as published, not endorsed.
+  request_signing:
+    scheme: sign parameter
+    detail: >-
+      Payment-family operations require a `sign` request parameter; a bad signature returns result
+      10000606 ("接口参数签名错误"). The signing algorithm document sits inside the registered-developer area
+      and was not retrieved.
+  additional_credential:
+    name: code upload private key
+    used_by: ks-miniprogram-ci
+    detail: >-
+      A separate private key downloaded from the developer platform authorizes code preview and upload,
+      optionally restricted by an IP allowlist. Kuaishou states the key is not stored in plaintext on
+      the platform and must be reset if lost.
+    docs: https://open.kuaishou.com/docs/develop/developerTools/miniprogram-ci.html
+- api: kuaishou:kling-ai
+  base_url: https://api-singapore.klingai.com
+  alternate_base_url: https://api-beijing.klingai.com
+  schemes:
+  - id: kling_rest_jwt
+    type: http
+    scheme: bearer
+    bearer_format: JWT
+    detail: >-
+      The Kling REST API is authenticated with a JWT the caller signs itself from an Access Key ID and
+      Access Key Secret issued in the developer console, sent as Authorization: Bearer <token>. The
+      provider's llms.txt describes it as "RESTful API with JWT-based authentication (AccessKey +
+      SecretKey)".
+    evidence:
+      probe: POST https://api-singapore.klingai.com/v1/videos/text2video with no Authorization header
+      http_status: 401
+      body: '{"code":1001,"message":"Authorization is empty","request_id":"<uuid>"}'
+      fetched: '2026-08-12'
+    signing_algorithm: unverified
+    signing_note: >-
+      The JWT header/payload/signature construction is documented inside https://kling.ai/document-api,
+      a JavaScript single-page application that could not be harvested. The algorithm is NOT asserted
+      here.
+  - id: kling_mcp_oauth
+    type: oauth2
+    flow: authorization_code
+    profile: OAuth 2.1 style — PKCE required, public client, dynamic client registration
+    issuer: https://kling.ai/auth
+    authorization_url: https://kling.ai/auth/authorize
+    token_url: https://kling.ai/auth/token
+    registration_url: https://kling.ai/auth/register
+    revocation_url: https://kling.ai/auth/revoke
+    jwks_uri: https://kling.ai/auth/.well-known/jwks.json
+    grant_types: [authorization_code, refresh_token]
+    response_types: [code]
+    code_challenge_methods: [S256]
+    token_endpoint_auth_methods: [none]
+    id_token_signing_alg_values: [RS256]
+    subject_types: [public]
+    scopes: [generation.create, generation.read, account.credit.read]
+    protected_resource: https://kling.ai/mcp
+    discovery:
+      protected_resource_metadata: https://kling.ai/.well-known/oauth-protected-resource
+      authorization_server_metadata: https://kling.ai/.well-known/oauth-authorization-server/auth
+      spec: RFC 9728 + RFC 8414
+      status: 200
+      fetched: '2026-08-12'
+    evidence:
+      challenge: >-
+        POST https://kling.ai/mcp -> HTTP 401 with
+        WWW-Authenticate: Bearer resource_metadata=https://kling.ai/.well-known/oauth-protected-resource/mcp
+    detail: scopes/kuaishou-scopes.yml
+    method: probed
 - api: kuaishou:kwai-for-business
   base_url: https://developers.kwai.com/rest/n/mapi
   schemes:
@@ -46,8 +186,16 @@ apis:
         endpoint could be confirmed without an approved Kwai for Business advertiser account. No scheme
         is asserted.
 gaps:
-- No /.well-known/openid-configuration or /.well-known/oauth-authorization-server document is published
+- >-
+  No /.well-known/openid-configuration or /.well-known/oauth-authorization-server document is published
   on any Kuaishou or Kwai host (all requests are absorbed by the SPA catch-all; see
-  well-known/kuaishou-well-known.yml).
-- No public OAuth scope / permission reference could be retrieved; scopes/ is intentionally not produced
-  rather than fabricated.
+  well-known/kuaishou-well-known.yml). kling.ai is the exception and serves both RFC 9728 and RFC 8414
+  metadata.
+- >-
+  No public OAuth scope / permission reference exists for the Kuaishou Open Platform; the only scopes
+  recorded anywhere in this repo are the three Kling AI MCP scopes read from the provider's own metadata.
+- >-
+  The Kling JWT signing algorithm and claim set are documented only inside a JavaScript-rendered docs
+  site and are therefore not recorded.
+- >-
+  Kuaishou's payment-family request signing algorithm is behind developer registration.

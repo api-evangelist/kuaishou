@@ -1,0 +1,1 @@
+{"resource":"https://kling.ai/mcp","authorization_servers":["https://kling.ai/auth"],"scopes_supported":["generation.create","generation.read","account.credit.read"],"bearer_methods_supported":["header"],"resource_name":"Spring MCP Resource Server"}

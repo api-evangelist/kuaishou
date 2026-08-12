@@ -1,24 +1,33 @@
-generated: '2026-07-19'
+generated: '2026-08-12'
 method: searched
 source: >-
-  Live HTTP probes against https://open.kuaishou.com/openapi/* and
-  https://open.kuaishou.com/oauth2/access_token and https://developers.kwai.com/rest/n/mapi/* on 2026-07-19
+  https://open.kuaishou.com/docs/develop/server/errorCode-new.html (HTTP 200, server-rendered),
+  https://open.kuaishou.com/docs/develop/IndustrySolutions/introduction/errorCodes.html (HTTP 200),
+  https://open.kuaishou.com/docs/saas/develop/api/errorCodes.html (HTTP 200), all fetched 2026-08-12;
+  plus live HTTP probes against https://open.kuaishou.com/openapi/*,
+  https://open.kuaishou.com/oauth2/access_token, https://developers.kwai.com/rest/n/mapi/* (2026-07-19)
+  and https://api-singapore.klingai.com/v1/videos/text2video (2026-08-12)
 format: proprietary
 notes: >-
-  Kuaishou does not use RFC 9457 application/problem+json. The catalogue below records only error codes
-  and envelope shapes observed directly on the wire; the provider's full error-code reference is behind
-  developer registration and is not reproduced or guessed at here.
+  Round 1 recorded only three probe-observed codes and flagged the published registry as unreachable.
+  It is reachable: the Kuaishou mini-program documentation at open.kuaishou.com/docs is a
+  server-rendered VuePress site, not the JavaScript SPA that fronts the rest of the portal, and it
+  publishes three separate error-code tables. Those tables are transcribed below with the provider's
+  own Chinese text preserved verbatim alongside an English reading. Kuaishou does not use RFC 9457
+  application/problem+json anywhere. No code is invented; where the provider gives no explanation the
+  `meaning` field is left null rather than filled in.
 envelopes:
 - api: kuaishou:open-platform
   media_type: application/json
   shape:
-    result: integer result code (non-zero on failure)
-    error_msg: human-readable message, Chinese-language
+    result: integer result code (1 = success on mini-program server APIs; non-zero codes signal failure elsewhere)
+    error_msg: human-readable message, usually Chinese-language
     request_id: opaque correlation id returned per request
     error: OAuth 2.0 error identifier, present on /oauth2/* responses only
   http_status_note: >-
-    The Open API returns HTTP 200 for application-level errors and signals failure in the `result` field;
-    an HTTP 404 is used for unrouted paths and still carries the same JSON envelope.
+    The Open API returns HTTP 200 for application-level errors and signals failure in the `result`
+    field; an HTTP 404 is used for unrouted paths and still carries the same JSON envelope.
+  trace_headers: [X-REQUEST-ID, X-KSLOGID]
 - api: kuaishou:kwai-for-business
   media_type: application/json;charset=UTF-8
   shape:
@@ -28,6 +37,16 @@ envelopes:
     message: detail message, "No message available" when absent
     path: the request path that failed
   http_status_note: Standard HTTP status codes; the body mirrors the status.
+- api: kuaishou:kling-ai
+  media_type: application/json;charset=UTF-8
+  shape:
+    code: integer business error code
+    message: English-language message
+    request_id: UUID correlation id
+  http_status_note: >-
+    Kling AI uses real HTTP status codes AND a business code. An unauthenticated call returns HTTP 401
+    with {"code":1001,"message":"Authorization is empty","request_id":"<uuid>"}.
+  trace_field: request_id
 errors:
 - code: 100200100
   api: kuaishou:open-platform
@@ -35,13 +54,14 @@ errors:
   title: Invalid or missing request parameters
   meaning: >-
     The request omitted required parameters or supplied values that failed validation. Observed on both
-    /openapi/photo/list and /openapi/user_info with no parameters, and on /oauth2/access_token where it is
-    additionally tagged with the OAuth 2.0 `invalid_request` identifier.
+    /openapi/photo/list and /openapi/user_info with no parameters, and on /oauth2/access_token where it
+    is additionally tagged with the OAuth 2.0 `invalid_request` identifier.
   http_status: 200
   remediation: Supply the required parameters (including the access token) and re-issue the request.
   evidence: >-
     GET https://open.kuaishou.com/openapi/user_info ->
     {"result":100200100,"error_msg":"参数为空","request_id":"..."}
+  method: probed
 - code: 1026
   api: kuaishou:open-platform
   message: '[1026] 404 NOT FOUND'
@@ -52,6 +72,458 @@ errors:
   evidence: >-
     GET https://open.kuaishou.com/openapi/mp/developer/user/getUserInfo ->
     {"result":1026,"error_msg":"[1026] 404 NOT FOUND","request_id":"..."}
+  method: probed
+- code: 100200102
+  api: kuaishou:open-platform
+  message: access denied
+  title: Token invalid or expired
+  meaning: The access token is no longer valid.
+  remediation: Re-run getAccessToken and retry. In the industry-solution table the same code is described as an authorization error — check app_id and access_token.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000200
+  api: kuaishou:open-platform
+  message: Missing app_id / Missing access_token / 其他错误提示信息
+  title: Illegal or missing parameter
+  meaning: >-
+    A query parameter is missing or malformed. "Missing app_id" means app_id is absent from the query
+    params, "Missing access_token" means access_token is absent; other parameter errors reuse this code
+    with a detailed message.
+  remediation: Read the detail message, correct the request parameters, and retry.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000302
+  api: kuaishou:open-platform
+  message: api too fast
+  title: Rate limited
+  meaning: Request frequency too high; the call was throttled.
+  remediation: Back off and retry more slowly. See rate-limits/kuaishou-rate-limits.yml.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000303
+  api: kuaishou:open-platform
+  message: 命中反垃圾策略
+  title: Blocked by anti-spam policy
+  meaning: null
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000500
+  api: kuaishou:open-platform
+  message: 系统故障
+  title: System failure
+  meaning: Generally a server-side fault.
+  remediation: Retry; if retries keep failing, contact Kuaishou support.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000601
+  api: kuaishou:open-platform
+  message: 订单不存在
+  title: Order not found
+  meaning: The payment, settlement, refund or contract order referenced in the request does not exist.
+  remediation: Check the order number.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000602
+  api: kuaishou:open-platform
+  message: 订单信息不一致
+  title: Order information mismatch
+  meaning: A repeat request for the same payment/settlement/refund order carried different order details than the first request.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000604
+  api: kuaishou:open-platform
+  message: 订单状态不正确
+  title: Invalid order state
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000605
+  api: kuaishou:open-platform
+  message: invalid notify url
+  title: Illegal callback URL
+  meaning: The notify/callback URL supplied during pre-pay, settlement, refund or contracting is not permitted.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000606
+  api: kuaishou:open-platform
+  message: 接口参数签名错误
+  title: Request signature error
+  meaning: The `sign` value did not verify.
+  remediation: Re-check the signature generation against the signing documentation.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000607
+  api: kuaishou:open-platform
+  message: 不合理的订单金额
+  title: Unreasonable order amount
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000608
+  api: kuaishou:open-platform
+  message: 不支持的service_id
+  title: Unsupported service_id
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000609
+  api: kuaishou:open-platform
+  message: 非法的orderInfo
+  title: Illegal orderInfo
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000610
+  api: kuaishou:open-platform
+  message: 重复下单
+  title: Duplicate order
+  meaning: A payment, settlement or refund order with this external order number already exists.
+  remediation: >-
+    Check the external order number. This is the closest thing the Open Platform publishes to an
+    idempotency contract — uniqueness is enforced on the merchant's own order number rather than on a
+    dedicated Idempotency-Key header.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000611
+  api: kuaishou:open-platform
+  message: 查询订单信息失败
+  title: Order lookup failed
+  remediation: Server-side query error; retry.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000622
+  api: kuaishou:open-platform
+  message: 支付调用未知异常
+  title: Unknown payment invocation exception
+  remediation: Retry or contact Kuaishou support.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000631
+  api: kuaishou:open-platform
+  message: 配置错误
+  title: Mini-program server configuration error
+  remediation: Contact Kuaishou mini-program support.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000632
+  api: kuaishou:open-platform
+  message: 内部错误
+  title: Internal error
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000633
+  api: kuaishou:open-platform
+  message: 支付中心异常
+  title: Payment centre exception
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000643
+  api: kuaishou:open-platform
+  message: 帐户尚未绑定进件人
+  title: Account not yet onboarded
+  remediation: Complete merchant onboarding before placing an order.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000644
+  api: kuaishou:open-platform
+  message: 回调域名设置有误
+  title: Callback domain misconfigured
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000645
+  api: kuaishou:open-platform
+  message: 商家提现次数限制
+  title: Merchant withdrawal frequency limit
+  meaning: One withdrawal per channel per day.
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000681
+  api: kuaishou:open-platform
+  message: 类目被封禁
+  title: Category banned
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000682
+  api: kuaishou:open-platform
+  message: 当前未到可结算时间，请在支付成功7日后发起结算
+  title: Not yet settleable — 7 days after payment
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000683
+  api: kuaishou:open-platform
+  message: 订单未支付，无可结算金额
+  title: Order unpaid, nothing to settle
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000684
+  api: kuaishou:open-platform
+  message: 该单已处理完成
+  title: Order already processed
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000685
+  api: kuaishou:open-platform
+  message: 当前订单未到可结算时间，请在核销后3天发起结算
+  title: Not yet settleable — 3 days after redemption
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000686
+  api: kuaishou:open-platform
+  message: 当前有正在结算中的订单
+  title: A settlement is already in flight
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000687
+  api: kuaishou:open-platform
+  message: 当前有正在退款中的订单
+  title: A refund is already in flight
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000689
+  api: kuaishou:open-platform
+  message: 保证金账户余额不足
+  title: Insufficient deposit account balance
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10000690
+  api: kuaishou:open-platform
+  message: 保证金账户不存在
+  title: Deposit account does not exist
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10200501
+  api: kuaishou:open-platform
+  message: OAuth验签失败
+  title: OAuth signature verification failed
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10200502
+  api: kuaishou:open-platform
+  message: 查询条件无效
+  title: Invalid query condition
+  source: /docs/develop/server/errorCode-new.html
+  method: searched
+- code: 10002003
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 非法的poiId
+  title: Illegal poiId
+  meaning: The poiId supplied to the POI permission-application endpoint was not found inside Kuaishou.
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002004
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 指定的poiId还未获取到挂载权限
+  title: POI mounting permission not granted
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002005
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 指定的poiId申请没有找到
+  title: POI application record not found
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002006
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 指定的商品没有找到
+  title: Product not found
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002014
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 非法的商品状态
+  title: Illegal product state
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002015
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 商品已挂载成功，请勿重复挂载
+  title: Product already mounted — do not re-mount
+  remediation: Use the product edit endpoint to update information instead of re-mounting.
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002016
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: poi已申请通过，请勿重复申请
+  title: POI already approved — do not re-apply
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002021
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 非法的poi状态
+  title: Illegal POI state
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002023
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: poi已合并到了别的poi
+  title: POI merged into another POI
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002024
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 被封禁的商品重新上传没有修改需审信息
+  title: Banned product re-uploaded without changes
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002032
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 操作过于频繁
+  title: Per-product operation rate limit
+  meaning: >-
+    Operations on the same external product id + poiId combination are throttled. The provider states
+    the current limits explicitly: product mount once per 10 minutes, product edit once per 10 seconds.
+    Limits for the same product under different POIs are independent of each other.
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10002038
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 商品已被锁定，不可操作
+  title: Product locked
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10000417
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 上传的图片不存在
+  title: Uploaded image does not exist
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 10000419
+  api: kuaishou:open-platform
+  surface: local-services mounting
+  message: 非法的url
+  title: Illegal URL
+  source: /docs/develop/IndustrySolutions/introduction/errorCodes.html
+  method: searched
+- code: 1
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 成功
+  title: Success
+  meaning: On the third-party-platform and mini-program server APIs, result = 1 means success.
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000002
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 非法参数
+  title: Illegal parameter
+  remediation: Check field names and value formats against the documentation.
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000003
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: App不存在
+  title: App does not exist
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000004
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 非法的URL
+  title: Illegal URL
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000005
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 二维码过期
+  title: QR code expired
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000006
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 权限校验失败
+  title: Permission check failed
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000007
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 错误的预授权码
+  title: Bad pre-authorization code
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000008
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: invalid ticket
+  title: Invalid ticket
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000009
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 错误的授权码
+  title: Bad authorization code
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000010
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: 已经授权过其他三方应用
+  title: Already authorized to another third-party app
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 10000011
+  api: kuaishou:open-platform
+  surface: third-party platform
+  message: token 过期
+  title: Token expired
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 404200
+  api: kuaishou:open-platform
+  surface: third-party delegated mini-program APIs
+  message: 未找到对应的授权小程序
+  title: Authorized mini program not found
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 404201
+  api: kuaishou:open-platform
+  surface: third-party delegated mini-program APIs
+  message: 未找到第三方应用
+  title: Third-party app not found
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 403103
+  api: kuaishou:open-platform
+  surface: third-party delegated mini-program APIs
+  message: 参数错误
+  title: Parameter error
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 403104
+  api: kuaishou:open-platform
+  surface: third-party delegated mini-program APIs
+  message: 鉴权服务异常
+  title: Authentication service exception
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 504001
+  api: kuaishou:open-platform
+  surface: third-party delegated mini-program APIs
+  message: 接口超时
+  title: Interface timeout
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
+- code: 100200500
+  api: kuaishou:open-platform
+  surface: third-party delegated mini-program APIs
+  message: 服务端异常
+  title: Server-side exception
+  source: /docs/saas/develop/api/errorCodes.html
+  method: searched
 - code: 404
   api: kuaishou:kwai-for-business
   message: Not Found
@@ -62,6 +534,42 @@ errors:
   evidence: >-
     GET https://developers.kwai.com/rest/n/mapi/report/dspAccountReport ->
     {"timestamp":"...","status":404,"error":"Not Found","message":"No message available","path":"..."}
+  method: probed
+- code: 1001
+  api: kuaishou:kling-ai
+  message: Authorization is empty
+  title: Missing Authorization header
+  meaning: >-
+    The Kling AI REST API requires a JWT bearer token in the Authorization header; a request without one
+    is rejected before any business logic runs.
+  http_status: 401
+  remediation: 'Sign a JWT with your Access Key ID and Access Key Secret and send Authorization: Bearer <token>.'
+  evidence: >-
+    POST https://api-singapore.klingai.com/v1/videos/text2video ->
+    {"code":1001,"message":"Authorization is empty","request_id":"4930e02d-acff-46c2-be05-8209d51857e6"}
+    (identical response from https://api-beijing.klingai.com)
+  method: probed
+- code: 404
+  api: kuaishou:kling-ai
+  message: Not Found
+  title: Unrouted Kling API path
+  http_status: 404
+  evidence: >-
+    GET https://api-singapore.klingai.com/openapi.json ->
+    {"timestamp":"2026-08-12T17:15:56.665+0000","status":404,"error":"Not Found","message":"No message
+    available","path":"/openapi.json"}
+  note: >-
+    The Kling REST API shares the Spring-style {timestamp,status,error,message,path} 404 envelope with
+    Kwai for Business, while its authenticated surface uses {code,message,request_id}.
+  method: probed
 gaps:
-- Kuaishou's complete numeric result-code registry is published inside the registered-developer
-  documentation and could not be harvested; only probe-verified codes are recorded.
+- >-
+  The Kwai for Business marketing API publishes no public error-code reference; only the framework-level
+  404 envelope was observed.
+- >-
+  Kling AI's full business error-code table lives inside https://kling.ai/document-api, a JavaScript
+  single-page application whose content is fetched at runtime and could not be harvested. Only code 1001
+  and the 404 envelope are recorded, both from live probes.
+- >-
+  Kuaishou's mini-program client-side (ks.*) API error codes were not harvested; this catalogue covers
+  the server-side surfaces only.

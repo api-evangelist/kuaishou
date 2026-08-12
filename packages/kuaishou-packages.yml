@@ -1,39 +1,177 @@
-generated: '2026-07-19'
+generated: '2026-08-12'
 method: searched
-source: https://registry.npmjs.org/-/v1/search?text=kwai (2026-07-19)
+source: >-
+  registry.npmjs.org metadata endpoints and search.maven.org solrsearch, queried 2026-08-12;
+  https://open.kuaishou.com/docs/develop/developerTools/miniprogram-ci.html;
+  https://open.kuaishou.com/docs/develop/developerTools/extend-components/1-quick-start.html;
+  https://registry.npmjs.org/@klingai/cli-global (README)
 notes: >-
-  Kuaishou publishes open source to npm under the Kwai brand, but NONE of it is a client library for the
-  Kuaishou Open Platform API or the Kwai for Business marketing API. The first-party packages found are
-  media-player and front-end infrastructure libraries. Because no official API client SDK exists on any
-  public registry, no `SDKs` pointer is wired into apis.yml — only `Packages`.
+  Round 1 concluded "no official API client SDK exists on any public registry". That was wrong, and this
+  round corrects it. Kuaishou publishes at least four first-party packages that are API clients or
+  API-adjacent tooling: ks-miniprogram-ci (the Open Platform code upload/preview client, documented in
+  Kuaishou's own developer tools reference), kma-ui (the official mini-program component library), and
+  @klingai/cli-global / @klingai/cli-cn (the official Kling AI CLI, a thin MCP client whose npm
+  repository field points at git.corp.kuaishou.com). Because at least one first-party client library is
+  published, an SDKs pointer IS wired into apis.yml this round.
+  Every entry carries structured `version:` and `published:` fields read from the registry metadata
+  endpoint. Where a registry did not answer or the package does not exist, `version: null` is recorded
+  with a note rather than a guess.
 registries_probed:
 - registry: npm
-  result: first-party non-API packages found
-- registry: pypi
-  result: search page did not render; no first-party Kuaishou/Kwai API client identified
+  result: first-party API clients, CLI and component library found
+  probed: '2026-08-12'
 - registry: maven-central
-  result: not probed (web search budget exhausted)
+  result: first-party Android/Java SDKs and one OIDC client found
+  probed: '2026-08-12'
+- registry: pypi
+  result: no first-party Kuaishou/Kwai/Kling API client identified
+  probed: '2026-07-19'
 - registry: nuget
-  result: not probed (web search budget exhausted)
+  result: not probed
 - registry: pkg.go.dev
-  result: not probed (web search budget exhausted)
+  result: not probed; a community Go SDK for the Kwai marketing API exists (bububa/kwai-marketing-api) but is not first-party
 - registry: rubygems
-  result: not probed (web search budget exhausted)
+  result: not probed
 - registry: packagist
-  result: not probed (web search budget exhausted)
+  result: not probed
 - registry: crates.io
-  result: not probed (web search budget exhausted)
-api_client_sdks: []
-api_client_sdk_note: >-
-  No first-party client library for https://open.kuaishou.com/openapi or
-  https://developers.kwai.com/rest/n/mapi was found on any public package registry.
+  result: not probed
+api_client_sdks:
+- language: javascript
+  registry: npm
+  name: ks-miniprogram-ci
+  url: https://www.npmjs.com/package/ks-miniprogram-ci
+  install: npm install ks-miniprogram-ci --save
+  official: true
+  api: kuaishou:open-platform
+  version: 1.3.16
+  published: '2026-07-21'
+  repository: https://mp.kuaishou.com/
+  category: api-client
+  description: >-
+    The Kuaishou mini-program CI client, extracted from the Kuaishou Developer Tools. Calls the Open
+    Platform upload/preview/appinfo endpoints from Node or the command line using a downloaded code
+    upload private key, with an optional IP allowlist.
+  operations: [getAppInfo, upload, preview]
+  docs: https://open.kuaishou.com/docs/develop/developerTools/miniprogram-ci.html
+  currency_note: Actively maintained — latest release is under a month before this pass.
+- language: javascript
+  registry: npm
+  name: '@klingai/cli-global'
+  url: https://www.npmjs.com/package/@klingai/cli-global
+  install: npm i -g @klingai/cli-global
+  official: true
+  api: kuaishou:kling-ai
+  version: 0.1.3
+  published: '2026-07-08'
+  first_published: '2026-06-17'
+  repository: git@git.corp.kuaishou.com:kling-platform/kling-skills-toc.git
+  category: api-client
+  description: >-
+    Official Kling AI command-line tool and thin MCP client. Commands map 1:1 to the backend MCP tools
+    at https://kling.ai/mcp; handles browser OAuth login, argument translation, polling and file upload.
+    Requires Node.js 18+.
+  docs: https://kling.ai/app/cli
+- language: javascript
+  registry: npm
+  name: '@klingai/cli-cn'
+  url: https://www.npmjs.com/package/@klingai/cli-cn
+  install: npm i -g @klingai/cli-cn
+  official: true
+  api: kuaishou:kling-ai
+  version: 0.1.3
+  published: '2026-07-08'
+  repository: git@git.corp.kuaishou.com:kling-platform/kling-skills-toc.git
+  category: api-client
+  description: >-
+    The China-site build of the official Kling AI CLI. Installs the same `kling` command as
+    @klingai/cli-global; the two differ only by account region.
+- language: java
+  registry: maven-central
+  name: io.github.kwai-apis:kwai-oidc-client
+  url: https://central.sonatype.com/artifact/io.github.kwai-apis/kwai-oidc-client
+  official: unverified
+  api: kuaishou:open-platform
+  version: 1.0.3
+  published: '2022-04-12'
+  repository: https://github.com/kwai-apis/kwai-oidc-client
+  category: api-client
+  description: >-
+    "Public interfaces or tools for Kwai OpenId Connect APIs." Published under the io.github.kwai-apis
+    coordinate by the GitHub account kwai-apis, which also holds an OSSRH namespace-verification repo.
+  official_note: >-
+    Marked unverified rather than true — the io.github.* coordinate is a personal-namespace publish and
+    no Kuaishou or Kwai documentation page was found that links to it. Do not treat it as a supported
+    first-party SDK without confirmation from the provider.
+  currency_note: >-
+    Last released 2022-04-12, more than four years before this pass — an abandonment signal if it is in
+    fact the only Java client for Kwai OIDC.
 packages:
+- language: java
+  registry: maven-central
+  name: com.github.kwaisocial:kwai-opensdk-withauth
+  url: https://central.sonatype.com/artifact/com.github.kwaisocial/kwai-opensdk-withauth
+  official: true
+  version: 3.7.6
+  published: '2025-03-20'
+  category: mobile-sdk
+  description: Kwai Open SDK for Android with authorization (share and login integration for third-party apps).
+- language: java
+  registry: maven-central
+  name: com.github.kwaiopen:kwai-open-sdk
+  url: https://central.sonatype.com/artifact/com.github.kwaiopen/kwai-open-sdk
+  official: true
+  version: 1.0.6
+  published: '2022-04-19'
+  category: mobile-sdk
+  description: Kwai Open SDK for Android (share integration).
+- language: java
+  registry: maven-central
+  name: com.kuaishou:kwai-business-extension-framwork
+  url: https://central.sonatype.com/artifact/com.kuaishou/kwai-business-extension-framwork
+  official: true
+  version: 1.0.1
+  published: '2025-01-10'
+  category: framework
+  description: Kuaishou's business extension framework, also published on GitHub at kwai/kwai-business-extension-framwork.
+- language: java
+  registry: maven-central
+  name: com.kuaishou.koom:koom-java-leak
+  url: https://central.sonatype.com/namespace/com.kuaishou.koom
+  official: true
+  version: null
+  published: null
+  category: observability
+  description: >-
+    KOOM, Kuaishou's Android out-of-memory monitoring toolkit. Several artifacts under the
+    com.kuaishou.koom coordinate (kwai-unwind, kwai-android-base, kwai-linker) last published 2024-04.
+  note: >-
+    version/published recorded as null because the specific artifact name was not resolved in this pass;
+    the sibling artifacts under the same coordinate show a 2024-04-16 timestamp. Not an API client.
+- language: javascript
+  registry: npm
+  name: kma-ui
+  url: https://www.npmjs.com/package/kma-ui
+  install: npm i kma-ui --save
+  official: true
+  version: 0.0.4-alpha
+  published: '2024-05-24'
+  category: ui-components
+  description: >-
+    The official Kuaishou mini-program extension component library (documented in Kuaishou's developer
+    tools reference). See components/kuaishou-components.yml.
+  docs: https://open.kuaishou.com/docs/develop/developerTools/extend-components/1-quick-start.html
+  currency_note: >-
+    Still on an alpha version tag, last published 2024-05-24, while its documentation remains live —
+    a maturity gap worth flagging to integrators.
 - language: javascript
   registry: npm
   name: '@kwai-video-team/las.js'
   url: https://www.npmjs.com/package/@kwai-video-team/las.js
   install: npm install @kwai-video-team/las.js
   official: true
+  version: 1.0.6
+  published: '2020-08-04'
   category: media-player
   description: Live Adaptive Streaming (LAS) video library for FLV and live streaming.
   repository: https://github.com/KwaiVideoTeam/las
@@ -43,6 +181,8 @@ packages:
   url: https://www.npmjs.com/package/@kwai-video-team/kwai-player-web
   install: npm install @kwai-video-team/kwai-player-web
   official: true
+  version: 1.1.19
+  published: '2025-03-21'
   category: media-player
   description: Web video player supporting FLV, HLS, MP4 and live streaming.
 - language: javascript
@@ -51,6 +191,8 @@ packages:
   url: https://www.npmjs.com/package/@kwai-explore/model
   install: npm install @kwai-explore/model
   official: true
+  version: 0.4.3-alpha.0
+  published: '2024-08-05'
   category: frontend-infrastructure
   description: Vue.js state management solution published by the Kwai front-end team.
 - language: javascript
@@ -59,6 +201,8 @@ packages:
   url: https://www.npmjs.com/package/@kwai-explore/picture
   install: npm install @kwai-explore/picture
   official: true
+  version: 0.0.3
+  published: '2022-10-16'
   category: frontend-infrastructure
   description: Picture component supporting multiple image formats.
 third_party:
@@ -67,4 +211,32 @@ third_party:
   name: '@tarojs/plugin-platform-kwai'
   url: https://www.npmjs.com/package/@tarojs/plugin-platform-kwai
   official: false
-  description: Taro build plugin targeting the Kuaishou (Kwai) mini-program platform. Community-maintained.
+  version: null
+  published: null
+  description: >-
+    Taro build plugin targeting the Kuaishou (Kwai) mini-program platform. Community-maintained;
+    version not re-read this pass.
+- language: javascript
+  registry: npm
+  name: '@ai-sdk/klingai'
+  url: https://www.npmjs.com/package/@ai-sdk/klingai
+  official: false
+  version: 4.0.29
+  published: '2026-08-11'
+  description: >-
+    Kling AI provider for the Vercel AI SDK. NOT published by Kuaishou, but the most actively maintained
+    third-party client for the Kling API — released the day before this pass.
+- language: go
+  registry: github
+  name: bububa/kwai-marketing-api
+  url: https://github.com/bububa/kwai-marketing-api
+  official: false
+  version: null
+  published: null
+  description: Community Go SDK for the Kuaishou 磁力引擎 (Kwai for Business) marketing API.
+gaps:
+- >-
+  No first-party client library was found for the Kwai for Business marketing API
+  (https://developers.kwai.com/rest/n/mapi); the only SDK located is community-maintained.
+- >-
+  No first-party Python, Go, Ruby, PHP or .NET client was found for any Kuaishou API surface.

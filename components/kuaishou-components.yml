@@ -1,0 +1,138 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://open.kuaishou.com/docs/develop/developerTools/extend-components/1-quick-start.html and the
+  server-rendered route table of the Kuaishou mini-program documentation site
+  (https://open.kuaishou.com/docs, VuePress 1.9.7), enumerated 2026-08-12
+notes: >-
+  Client-side UI surfaces Kuaishou publishes for developers. These are mini-program components, not
+  web-embeddable widgets: they are consumed inside a Kuaishou mini program via `usingComponents` in
+  app.json or a page's .json, and rendered in KSML. Component names are transcribed from the provider's
+  own documentation route table; no component is invented. Distinct from the SDKs recorded in
+  packages/kuaishou-packages.yml.
+families:
+- id: kma-ui
+  name: kma-ui extension component library
+  api: kuaishou:open-platform
+  official: true
+  loader:
+    registry: npm
+    package: kma-ui
+    version: 0.0.4-alpha
+    published: '2024-05-24'
+    install: npm i kma-ui --save
+  usage: >-
+    Register in app.json or [page].json, e.g. {"usingComponents": {"k-icon": "kma-ui/icon/index"}},
+    then use in KSML as <k-icon name="emptystate_nonetwork" />.
+  component_count: 20
+  components:
+  - action-sheet
+  - badge
+  - bottom-dialog
+  - bottom-panel
+  - dialog
+  - empty-state
+  - form-item
+  - icon
+  - mask
+  - nav-bar
+  - notice-bar
+  - popup
+  - rate
+  - stepper
+  - tab-panel
+  - tabs
+  - tag
+  - toast
+  - transition
+  - uploader
+  docs: https://open.kuaishou.com/docs/develop/developerTools/extend-components/1-quick-start.html
+  maturity_note: >-
+    Still published under an alpha version tag and last released 2024-05-24, while the documentation
+    remains live.
+- id: builtin
+  name: Kuaishou mini-program built-in components
+  api: kuaishou:open-platform
+  official: true
+  loader: none
+  loader_note: Built into the mini-program framework; no package install required.
+  component_count: 40
+  groups:
+  - group: base
+    components: [icon, page-meta, progress, rich-text, text]
+  - group: view
+    components: [view, scroll-view, swiper, swiper-item, movable-area, movable-view, cover-view, cover-image]
+  - group: form
+    components: [form, button, input, textarea, label, picker, picker-view, picker-view-column, checkbox, checkbox-group, radio, radio-group, slider, switch]
+  - group: media
+    components: [image, video, camera]
+  - group: canvas
+    components: [canvas]
+  - group: map
+    components: [map]
+  - group: route
+    components: [navigator, navigation-bar]
+  - group: life
+    components: [address]
+  - group: open
+    components: [ad, follow-service, payment-list, web-view]
+    note: >-
+      The `open` group is the commercially significant one — ad placement, business-account follow,
+      the payment method list and an embedded web view.
+  - group: native-components
+    components: [native-components]
+  docs: https://open.kuaishou.com/docs/develop/components/base/icon.html
+- id: kma-template
+  name: kma-template business page templates
+  api: kuaishou:open-platform
+  official: true
+  loader:
+    registry: null
+    package: null
+    note: >-
+      Distributed with the Kuaishou Developer Tools rather than a public registry; no npm package name
+      is published on the documentation pages, so no version can be recorded.
+  template_count: 15
+  templates:
+  - name: home
+    surfaces: [directive, service-api]
+  - name: city
+    surfaces: [directive, service-api]
+  - name: store
+    surfaces: [directive, service-api]
+  - name: store-list
+    surfaces: [directive, service-api]
+  - name: store-map
+    surfaces: [directive]
+  - name: goods-detail
+    surfaces: [directive, service-api]
+  - name: goods-album
+    surfaces: [directive, service-api]
+  - name: recommend-list
+    surfaces: [directive, service-api]
+  - name: comment-list
+    surfaces: [directive, service-api]
+  - name: evaluate
+    surfaces: [directive, service-api]
+  - name: ticket
+    surfaces: [directive, service-api]
+  - name: order-confirm
+    surfaces: [directive, service-api]
+  - name: order-detail
+    surfaces: [directive, service-api]
+  - name: order-list
+    surfaces: [directive, service-api]
+  - name: pay-status
+    surfaces: [directive]
+  note: >-
+    Each template ships a `directive` page (how to wire it up) and, for most, a `service-api` page
+    naming the server-side endpoints the template calls — a local-services commerce scaffold rather
+    than a generic UI kit.
+  docs: https://open.kuaishou.com/docs/develop/developerTools/kma-template/1-quick-start.html
+gaps:
+- >-
+  Kling AI publishes no embeddable component library; its client surface is the web app, the CLI and
+  the MCP server.
+- >-
+  No web-embeddable (browser <script> tag / web component) UI library was found on any Kuaishou or Kwai
+  property. Every component family above runs only inside a Kuaishou mini program.

@@ -1,0 +1,111 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://kling.ai/llms.txt (model version ladder, HTTP 200, fetched 2026-08-12);
+  https://kling.ai/release-note/release-history and https://kling.ai/sitemap-release.xml (30 dated
+  release-note URLs); https://open.kuaishou.com/docs/operate/specification/updateLog.html (HTTP 200);
+  https://open.kuaishou.com/docs/develop/updateLog/basicLibraryUpdate.html (HTTP 200);
+  live header inspection of open.kuaishou.com, developers.kwai.com and api-singapore.klingai.com
+notes: >-
+  Kuaishou runs three API surfaces with three different lifecycle postures. Kling AI versions
+  aggressively and publicly by MODEL ID and keeps the old ones callable. The Open Platform versions by
+  mini-program base library and by operational-rules revision. Kwai for Business publishes nothing. No
+  surface emits RFC 8594 Sunset or Deprecation headers, and no surface publishes a formal deprecation
+  policy with a notice period — that is the gap.
+deprecation_policy:
+  published: false
+  url: null
+  notice_period: null
+  note: >-
+    No deprecation, end-of-life or breaking-change policy document was found on any Kuaishou, Kwai or
+    Kling property. Model supersession on Kling AI is communicated through release notes and the model
+    list, not through a policy.
+sunset_headers:
+  rfc8594: false
+  observed: []
+  note: No Sunset or Deprecation response header was returned by any probed host.
+status_page:
+  published: false
+  url: null
+  note: >-
+    No status.* / *.statuspage.io / trust or uptime page was found for Kuaishou, Kwai, Kwai for Business
+    or Kling AI. Incident communication appears to route through developer support and the community
+    forum. No StatusPage pointer is emitted.
+sla:
+  published: false
+  note: No public availability or latency SLA was found for any surface.
+apis:
+- api: kuaishou:kling-ai
+  versioning:
+    scheme: model-id
+    detail: >-
+      Callers select a model by API ID (kling-v3, kling-v3-omni, kling-video-o1, kling-v2-6,
+      kling-v2-5-turbo, kling-v2-1, kling-v2-master, kling-v1-6, kling-v1-5, kling-v1) rather than by a
+      URL version segment; the REST path itself is /v1/. Available models and their parameter specs are
+      discoverable at runtime through the who_am_i MCP tool.
+    current: Kling 3.0 series (kling-v3, kling-v3-omni), released 2026-02-05
+  release_cadence: >-
+    Rapid. The published ladder runs 1.0 (2024-06) -> 1.5/1.6 (late 2024) -> 2.0 (2025-04) -> 2.1
+    (2025-05) -> 2.5 Turbo (2025-09) -> Video O1 (2025-12) -> 2.6 (2025-12) -> 3.0 / 3.0 Omni
+    (2026-02): eight generations in twenty months.
+  superseded_models:
+  - id: kling-v2-1
+    status: legacy
+    provider_wording: largely superseded by 2.5/2.6
+    retired: false
+  - id: kling-v2-master
+    status: legacy
+    provider_wording: superseded by 2.1 and later
+    retired: false
+  - id: kling-v1-6
+    status: legacy
+    retired: false
+  - id: kling-v1-5
+    status: legacy
+    retired: false
+  - id: kling-v1
+    status: legacy
+    provider_wording: first public DiT-based video generation model
+    retired: false
+  retirement_note: >-
+    No model is documented as retired or scheduled for retirement. Superseded models remain listed with
+    live prices — the cheapest published rate on the platform ($0.0035 per image) belongs to the
+    original kling-v1. That is a consumer-friendly posture, but it is a posture, not a commitment: no
+    document promises how long a model stays callable.
+  changelog: changelog/kuaishou-changelog.yml
+- api: kuaishou:open-platform
+  versioning:
+    scheme: base-library + path-segment
+    detail: >-
+      The mini-program runtime is versioned as a "基础库" (base library) with its own update log; server
+      API routes carry a product/segment path rather than a global version prefix. A "-new" suffix
+      appears on the current generation of payment and error-code documents (epay/open-api-new,
+      errorCode-new), with the pre-"-new" documents no longer linked.
+  compatibility_tooling:
+    runtime_check: ks.canIUse
+    detail: >-
+      The framework exposes a ks.canIUse capability probe, and the documentation carries a KMA
+      compatibility page — the Open Platform's substitute for a versioned contract.
+    docs: https://open.kuaishou.com/docs/develop/api-next/basic/ks.canIUse.html
+  operational_rules_changelog:
+    url: https://open.kuaishou.com/docs/operate/specification/updateLog.html
+    last_updated: '2024-12-10'
+    note: >-
+      A dated log of changes to the platform's operating rules (not the API). Most recent entry
+      2024-09-03, a restructure of the operations documentation.
+  review_gate: >-
+    Every mini-program version passes platform review before release; version review rules are published
+    at /docs/operate/Hierarchy/versioninformationreview/versionReview.html.
+- api: kuaishou:kwai-for-business
+  versioning:
+    scheme: path-segment
+    detail: Routes are namespaced under /rest/n/mapi. No version policy is published.
+  note: No changelog, deprecation policy, status page or SLA was found.
+gaps:
+- No RFC 8594 Sunset/Deprecation headers on any surface.
+- No published deprecation policy or notice period for any surface.
+- No status page or SLA for any surface.
+- >-
+  Kling release-note bodies are rendered client-side, so the individual entries could not be read; only
+  their URLs, their sitemap lastmod dates and the version ladder from the provider's llms.txt are
+  recorded.
