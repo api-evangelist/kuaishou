@@ -33,7 +33,7 @@ accessModel:
   - authentication
   generated: '2026-07-22'
   method: derived
-specificationVersion: '0.20'
+specificationVersion: '0.23'
 created: '2026-07-17'
 modified: '2026-08-12'
 image: https://s2-11031.kwimgs.com/kos/nlav11031/assets/favicon.ico
