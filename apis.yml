@@ -46,6 +46,22 @@ tags:
 - Live Streaming
 - Advertising
 - Marketing
+- Social-Media
+- Content
+- China
+- Artificial Intelligence
+- Generative AI
+- Machine-Learning
+- MCP
+tags_raw:
+- Company
+- Consumer
+- Social
+- Video
+- Short Video
+- Live Streaming
+- Advertising
+- Marketing
 - Social Media
 - Content
 - China
@@ -64,6 +80,11 @@ apis:
   humanURL: https://open.kuaishou.com/
   baseURL: https://open.kuaishou.com/openapi
   tags:
+  - Social
+  - Video
+  - Content
+  - Authentication
+  tags_raw:
   - Social
   - Video
   - Content
@@ -112,6 +133,13 @@ apis:
   humanURL: https://kling.ai/dev
   baseURL: https://api-singapore.klingai.com
   tags:
+  - Artificial Intelligence
+  - Generative AI
+  - Video
+  - Image
+  - Machine-Learning
+  - MCP
+  tags_raw:
   - AI
   - Generative AI
   - Video
