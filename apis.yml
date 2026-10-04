@@ -57,12 +57,12 @@ tags:
 - Live Streaming
 - Advertising
 - Marketing
-- Social-Media
+- Social Media
 - Content
 - China
 - Artificial Intelligence
 - Generative AI
-- Machine-Learning
+- Machine Learning
 - MCP
 tags_raw:
 - Company
@@ -80,6 +80,8 @@ tags_raw:
 - Generative AI
 - Machine Learning
 - MCP
+- Social-Media
+- Machine-Learning
 apis:
 - aid: kuaishou:open-platform
   name: Kuaishou Open Platform API
@@ -148,7 +150,7 @@ apis:
   - Generative AI
   - Video
   - Image
-  - Machine-Learning
+  - Machine Learning
   - MCP
   tags_raw:
   - AI
@@ -157,6 +159,7 @@ apis:
   - Image
   - Machine Learning
   - MCP
+  - Machine-Learning
   properties:
   - type: DeveloperPortal
     url: https://kling.ai/dev
