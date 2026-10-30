@@ -64,6 +64,119 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Kuaishou is a company surfaced as a portfolio company of dcm-ventures, hongshan and added to the API Evangelist network as a stub for enrichment. Sector: consumer. This profile is a lead awaiting the enrichment pipeline.
+Kuaishou Technology (快手) is a Beijing-based short-video and live-streaming platform operating Kuaishou in mainland China and Kwai internationally, spanning short video, live commerce, local services and online marketing. Its developer surface is split across two public properties: the Kuaishou Open Platform (open.kuaishou.com), which exposes an OAuth 2.0 authorization-code flow and a JSON Open API for third-party apps, mini programs and merchant integrations; and Kwai for Business (developers.kwai.com), the international marketing/advertising API used by advertisers and measurement partners. A third and markedly more open surface is Kling AI (kling.ai), Kuaishou's generative video and image platform, which ships an asynchronous REST API, an official CLI, a hosted MCP server with published OAuth scopes, and the only llms.txt Kuaishou serves anywhere. Kuaishou also publishes open source under the Kwai GitHub organization. The Open Platform console and the Kwai for Business portal are JavaScript single-page applications, largely Chinese-language and gated behind developer registration, but the mini-program documentation subtree at open.kuaishou.com/docs is server-rendered and publicly readable, so this profile records endpoints and pages verified by live HTTP probe or read from that subtree.
 
-Backed by: dcm-ventures, hongshan — http://www.kuaishou.com/
+**Areas:** Company · Consumer · Social · Video · Short Video · Live Streaming · Advertising · Marketing · Social Media · Content · China · Artificial Intelligence
+
+## Kuaishou on APIs.io
+
+Everything profiled for Kuaishou is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/kuaishou/](https://apis.io/providers/kuaishou/)** — or go straight to one of the APIs or properties below.
+
+### APIs (3)
+
+- [Kuaishou Open Platform API](https://apis.io/apis/kuaishou/open-platform/) — The Kuaishou Open Platform (快手开放平台) exposes a JSON HTTP API for third-party applications, mini programs and merchant tools built on Kuaishou. Access is…
+- [Kwai for Business Marketing API](https://apis.io/apis/kuaishou/kwai-for-business/) — Kwai for Business is Kuaishou's international advertising and marketing platform for the Kwai app. Its developer portal at developers.kwai.com documents a…
+- [Kling AI API](https://apis.io/apis/kuaishou/kling-ai/) — Kling AI (可灵) is Kuaishou Technology's generative video and image platform, launched in June 2024 and, by the company's own account, responsible for over…
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [Kling AI MCP Server](https://apis.io/servers/kuaishou/kling-ai-mcp-server/)
+
+#### Security (2)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Kuaishou Authentication](https://apis.io/security/kuaishou/kuaishou-authentication/)
+- [Kuaishou Domain Security](https://apis.io/security/kuaishou/kuaishou-domain-security/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Kuaishou Scopes](https://apis.io/scopes/kuaishou/kuaishou-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Kuaishou Plans Pricing](https://apis.io/plans/kuaishou/kuaishou-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Kuaishou Rate Limits](https://apis.io/rate-limits/kuaishou/kuaishou-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://www.kuaishou.com/)
+- [Documentation](https://open.kuaishou.com/docs)
+- [Getting started](https://open.kuaishou.com/docs/introduction/quickStartGuide/quickStart.html)
+- [API reference](https://open.kuaishou.com/docs/develop/server/code2Session.html)
+- [Pricing](https://kling.ai/dev/pricing)
+- [Support](https://www.kuaishou.com/about/contact)
+- [Blog](https://kling.ai/blog)
+- [Terms of service](https://www.kuaishou.com/about/policy?tab=protocol)
+- [Privacy policy](https://www.kuaishou.com/about/policy?tab=privacy)
+- [GitHub](https://github.com/kwai)
+
+## API Evangelist rating
+
+**Kin Score 29.6** — thin · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 76.7 |
+| Contract quality | 0.0 |
+| Contract governance | 4.5 |
+| Operational transparency | 18.4 |
+| Developer ergonomics | 63.7 |
+| Access clarity | 21.1 |
+
+**Agent readiness 28.5** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | — |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | documented (partial credit) |
+| Auth Clarity | served (partial credit) |
+| Idempotency | — |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | yes |
+| Agentic Commerce | — |
+
+**Regulatory alignment 31.8** — AI & Biometrics
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/kuaishou/](https://apis.io/providers/kuaishou/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Kuaishou: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/kuaishou/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
